@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "./dist/server.js",
   "scripts": {
-   "start": "npm run build && cross-env NODE_ENV=production node ./dist/server.js",
+    "start": "npm run build && cross-env NODE_ENV=production node ./dist/server.js",
     "dev": "cross-env NNODE_ENV=development nodemon",
     "build": "npm run clean && tsc",
     "clean": "rimraf ./dist"
@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "A modern Node.js TypeScript template with essential configurations for building RESTful APIs. Includes support for environment variable management, logging, and development tooling.",
   "dependencies": {
+    "@prisma/client": "^6.0.1",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -33,6 +34,7 @@
     "@types/multer": "^1.4.12",
     "@types/node": "^22.8.6",
     "cross-env": "^7.0.3",
+    "prisma": "^6.0.1",
     "rimraf": "^6.0.1"
   }
 }

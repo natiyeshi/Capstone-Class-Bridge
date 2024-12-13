@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// Learn more in the documentation: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id                   String                 @id @unique @default(cuid())
+  name                 String?
+  brand                String?
+  competitorImportData CompetitorImportData[]
+  inventory            Inventory[]
+  iodm                 IODM[]
+  pipeline             Pipeline[]
+}
+
+model Supplier {
+  id                   String                 @id @unique @default(cuid())
+  name                 String?
+  email                String?
+  phoneNumber          String?                @map("phone_number")
+  country              String?
+  competitorImportData CompetitorImportData[]
+  inventory            Inventory[]
+}
+
+model CompetitorImportData {
+  id             String    @id @unique @default(cuid())
+  product        Product?  @relation(fields: [productId], references: [id])
+  supplier       Supplier? @relation(fields: [supplierId], references: [id])
+  quantity       Int?
+  unit           String?
+  unitPrice      Float?    @map("unit_price")
+  totalPrice     Float?    @map("total_price")
+  orderDate      DateTime? @map("order_date")
+  shelfLife      String?   @map("shelf_life")
+  modeOfShipment String?   @map("mode_of_shipment")
+  productName    String?   @map("product_name")
+  productBrand   String?   @map("product_brand")
+  createdAt      DateTime? @default(now()) @map("created_at")
+  companyName    String?   @map("company_name")
+  productId      String?
+  supplierId     String?
+}
+
+model Inventory {
+  id             String    @id @unique @default(cuid())
+  product        Product?  @relation(fields: [productId], references: [id])
+  supplier       Supplier? @relation(fields: [supplierId], references: [id])
+  quantity       Int?
+  unit           String?
+  unitPrice      Float?    @map("unit_price")
+  totalPrice     Float?    @map("total_price")
+  orderDate      DateTime? @map("order_date")
+  shelfLife      DateTime? @map("shelf_life")
+  modeOfShipment String?   @map("mode_of_shipment")
+  productName    String?   @map("product_name")
+  productBrand   String?   @map("product_brand")
+  createdAt      DateTime? @default(now()) @map("created_at")
+  productId      String?
+  supplierId     String?
+}
+
+model Customer {
+  id                String             @id @unique @default(cuid())
+  name              String?
+  label             String?
+  sellsTransactions SellsTransaction[]
+}
+
+model SellsTransaction {
+  id          String    @id @unique @default(cuid())
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  sellsPerson Sells?    @relation(fields: [sellsId], references: [id])
+  quantity    Int?
+  totalPrice  Float?    @map("total_price")
+  createdAt   DateTime? @map("created_at")
+  customerId  String?
+  sellsId     String?
+}
+
+model Sells {
+  id                String             @id @unique @default(cuid())
+  name              String?
+  sellsTransactions SellsTransaction[]
+}
+
+model IODM {
+  id        String   @id @unique @default(cuid())
+  product   Product? @relation(fields: [productId], references: [id])
+  productId String?
+}
+
+model Pipeline {
+  id            String   @id @unique @default(cuid())
+  product       Product? @relation(fields: [productId], references: [id])
+  shipment      String?
+  quantity      Int?
+  invoiceAmount Float?   @map("invoice_amount")
+  productId     String?
+}
