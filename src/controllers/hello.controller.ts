@@ -1,7 +1,7 @@
 import { ApiResponse } from "../types";
 import { asyncWrapper } from "../utils";
 
-const greetingController = asyncWrapper(async (_, res) => {
+export const greetingController = asyncWrapper(async (_, res) => {
   res.status(200).json({
     success: true,
     message: "🌟 Welcome to Your Express TypeScript Template! 🚀",
@@ -9,6 +9,4 @@ const greetingController = asyncWrapper(async (_, res) => {
   } satisfies ApiResponse<null>);
 });
 
-export default {
-  greetingController,
-};
+
