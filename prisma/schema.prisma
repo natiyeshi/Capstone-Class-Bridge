@@ -1,107 +1,148 @@
-// This is your Prisma schema file,
-// Learn more in the documentation: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Product {
-  id                   String                 @id @unique @default(cuid())
-  name                 String?
-  brand                String?
-  competitorImportData CompetitorImportData[]
-  inventory            Inventory[]
-  iodm                 IODM[]
-  pipeline             Pipeline[]
+model User {
+  id       String  @id @default(uuid())
+  name     String
+  email    String  @unique
+  password String
+  role     Role
+  messagesSent     Message[] @relation("Sender")
+  messagesReceived Message[] @relation("Receiver")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Student Student[]
+
+  Parent Parent[]
+
+  Teacher Teacher[]
+
+  Director Director[]
 }
 
-model Supplier {
-  id                   String                 @id @unique @default(cuid())
-  name                 String?
-  email                String?
-  phoneNumber          String?                @map("phone_number")
-  country              String?
-  competitorImportData CompetitorImportData[]
-  inventory            Inventory[]
+enum Role {
+  DIRECTOR
+  TEACHER
+  PARENT
+  STUDENT
 }
 
-model CompetitorImportData {
-  id             String    @id @unique @default(cuid())
-  product        Product?  @relation(fields: [productId], references: [id])
-  supplier       Supplier? @relation(fields: [supplierId], references: [id])
-  quantity       Int?
-  unit           String?
-  unitPrice      Float?    @map("unit_price")
-  totalPrice     Float?    @map("total_price")
-  orderDate      DateTime? @map("order_date")
-  shelfLife      String?   @map("shelf_life")
-  modeOfShipment String?   @map("mode_of_shipment")
-  productName    String?   @map("product_name")
-  productBrand   String?   @map("product_brand")
-  createdAt      DateTime? @default(now()) @map("created_at")
-  companyName    String?   @map("company_name")
-  productId      String?
-  supplierId     String?
+model Student {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  parentId  String?
+  parent    Parent?  @relation(fields: [parentId], references: [id])
+  sectionId String?
+  section   Section? @relation(fields: [sectionId], references: [id])
+  performance Performance?
+  attendance Attendance[]
+  roster    Roster?
 }
 
-model Inventory {
-  id             String    @id @unique @default(cuid())
-  product        Product?  @relation(fields: [productId], references: [id])
-  supplier       Supplier? @relation(fields: [supplierId], references: [id])
-  quantity       Int?
-  unit           String?
-  unitPrice      Float?    @map("unit_price")
-  totalPrice     Float?    @map("total_price")
-  orderDate      DateTime? @map("order_date")
-  shelfLife      DateTime? @map("shelf_life")
-  modeOfShipment String?   @map("mode_of_shipment")
-  productName    String?   @map("product_name")
-  productBrand   String?   @map("product_brand")
-  createdAt      DateTime? @default(now()) @map("created_at")
-  productId      String?
-  supplierId     String?
+model Parent {
+  id      String   @id @default(uuid())
+  userId  String   @unique
+  user    User     @relation(fields: [userId], references: [id])
+  students Student[]
 }
 
-model Customer {
-  id                String             @id @unique @default(cuid())
-  name              String?
-  label             String?
-  sellsTransactions SellsTransaction[]
+model Teacher {
+  id      String   @id @default(uuid())
+  userId  String   @unique
+  user    User     @relation(fields: [userId], references: [id])
+  subjects Subject[]
+  sections Section[]
+  attendance Attendance[]
+
+  Roster Roster[]
 }
 
-model SellsTransaction {
-  id          String    @id @unique @default(cuid())
-  customer    Customer? @relation(fields: [customerId], references: [id])
-  sellsPerson Sells?    @relation(fields: [sellsId], references: [id])
-  quantity    Int?
-  totalPrice  Float?    @map("total_price")
-  createdAt   DateTime? @map("created_at")
-  customerId  String?
-  sellsId     String?
+model Director {
+  id      String   @id @default(uuid())
+  userId  String   @unique
+  user    User     @relation(fields: [userId], references: [id])
+  announcements Announcement[]
+  calendarEvents Calendar[]
 }
 
-model Sells {
-  id                String             @id @unique @default(cuid())
-  name              String?
-  sellsTransactions SellsTransaction[]
+model Message {
+  id          String   @id @default(uuid())
+  senderId    String
+  receiverId  String
+  sender      User     @relation("Sender", fields: [senderId], references: [id])
+  receiver    User     @relation("Receiver", fields: [receiverId], references: [id])
+  content     String
+  createdAt   DateTime @default(now())
 }
 
-model IODM {
-  id        String   @id @unique @default(cuid())
-  product   Product? @relation(fields: [productId], references: [id])
-  productId String?
+model Performance {
+  id        String   @id @default(uuid())
+  studentId String   @unique
+  student   Student  @relation(fields: [studentId], references: [id])
+  grade     Float
+  createdAt DateTime @default(now())
 }
 
-model Pipeline {
-  id            String   @id @unique @default(cuid())
-  product       Product? @relation(fields: [productId], references: [id])
-  shipment      String?
-  quantity      Int?
-  invoiceAmount Float?   @map("invoice_amount")
-  productId     String?
+model Subject {
+  id        String   @id @default(uuid())
+  name      String
+  teacherId String?
+  teacher   Teacher? @relation(fields: [teacherId], references: [id])
+}
+
+model Section {
+  id          String   @id @default(uuid())
+  name        String
+  gradeLevelId String
+  gradeLevel  GradeLevel @relation(fields: [gradeLevelId], references: [id])
+  students    Student[]
+  teachers    Teacher[]
+}
+
+model GradeLevel {
+  id        String   @id @default(uuid())
+  level     String
+  sections  Section[]
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+  teacherId String
+  teacher   Teacher @relation(fields: [teacherId], references: [id])
+  date      DateTime
+  status    String
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  directorId String
+  director  Director @relation(fields: [directorId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Calendar {
+  id          String   @id @default(uuid())
+  directorId  String
+  director    Director @relation(fields: [directorId], references: [id])
+  eventTitle  String
+  eventDate   DateTime
+}
+
+model Roster {
+  id        String   @id @default(uuid())
+  studentId String @unique
+  student   Student @relation(fields: [studentId], references: [id])
+  markedBy  String
+  teacher   Teacher @relation(fields: [markedBy], references: [id])
 }
