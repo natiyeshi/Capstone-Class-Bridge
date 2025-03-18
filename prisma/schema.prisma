@@ -13,17 +13,11 @@ model User {
   email    String  @unique
   password String
   role     Role
-  messagesSent     Message[] @relation("Sender")
-  messagesReceived Message[] @relation("Receiver")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   Student Student[]
-
   Parent Parent[]
-
   Teacher Teacher[]
-
   Director Director[]
 }
 
@@ -77,8 +71,8 @@ model Message {
   id          String   @id @default(uuid())
   senderId    String
   receiverId  String
-  sender      User     @relation("Sender", fields: [senderId], references: [id])
-  receiver    User     @relation("Receiver", fields: [receiverId], references: [id])
+  // sender      User     @relation("Sender", fields: [senderId], references: [id])
+  // receiver    User     @relation("Receiver", fields: [receiverId], references: [id])
   content     String
   createdAt   DateTime @default(now())
 }

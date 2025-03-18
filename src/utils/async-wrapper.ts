@@ -13,7 +13,7 @@ type AsyncCallback = (
   req: Request,
   res: Response,
   next: NextFunction
-) => Promise<void>;
+) => Promise<any>;
 
 const asyncWrapper = (
   callback: AsyncCallback,
