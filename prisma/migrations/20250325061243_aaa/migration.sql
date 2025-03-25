@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "role" "USER_ROLE" DEFAULT 'UNKNOWN';

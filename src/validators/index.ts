@@ -1,5 +1,5 @@
 import * as authValidator from "./auth.validator";
 
-export default {
+export  {
   authValidator,
 };

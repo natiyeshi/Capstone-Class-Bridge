@@ -4,7 +4,8 @@ import { ENV } from "./config";
 
 const server = createServer(app);
 
-const PORT = ENV.PORT;
+const PORT = 4000;
+// const PORT = ENV.PORT;
 
 server.listen(PORT, () => {
   console.log("Server is running on port: ", PORT);

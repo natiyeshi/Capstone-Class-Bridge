@@ -8,135 +8,220 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(uuid())
-  name     String
-  email    String  @unique
-  password String
-  role     Role
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Student Student[]
-  Parent Parent[]
-  Teacher Teacher[]
-  Director Director[]
-}
-
-enum Role {
-  DIRECTOR
-  TEACHER
-  PARENT
-  STUDENT
-}
-
-model Student {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
-  parentId  String?
-  parent    Parent?  @relation(fields: [parentId], references: [id])
-  sectionId String?
-  section   Section? @relation(fields: [sectionId], references: [id])
-  performance Performance?
-  attendance Attendance[]
-  roster    Roster?
-}
-
-model Parent {
-  id      String   @id @default(uuid())
-  userId  String   @unique
-  user    User     @relation(fields: [userId], references: [id])
-  students Student[]
+  id               String           @id @unique @default(cuid())
+  email            String           @unique
+  password         String
+  firstName        String
+  lastName         String
+  phoneNumber      String?
+  role             USER_ROLE?        @default(UNKNOWN)
+  // Relations
+  Teacher          Teacher[]
+  Student          Student[]
+  Parent           Parent[]
+  Director         Director[]
+  Calendar         Calendar[]
+  messagesSent     Message[]        @relation(name: "SentMessages")
+  messagesReceived Message[]        @relation(name: "ReceivedMessages")
+  SectionMessage   SectionMessage[]
 }
 
 model Teacher {
-  id      String   @id @default(uuid())
-  userId  String   @unique
-  user    User     @relation(fields: [userId], references: [id])
-  subjects Subject[]
-  sections Section[]
-  attendance Attendance[]
+  id                    String                  @id @unique @default(cuid())
+  user                  User?                   @relation(fields: [userId], references: [id])
+  userId                String?
+  Section               Section[]
+  TeacherSectionSubject TeacherSectionSubject[]
+  Result                Result[]
+}
 
-  Roster Roster[]
+model Student {
+  id                    String                  @id @unique @default(cuid())
+  user                  User?                   @relation(fields: [userId], references: [id])
+  section               Section?                @relation(fields: [sectionId], references: [id])
+  userId                String?
+  sectionId             String?
+  TeacherSectionSubject TeacherSectionSubject[]
+  Result                Result[]
+  CollectiveResult      CollectiveResult[]
+  Attendance            Attendance[]
+}
+
+model Parent {
+  id     String  @id @unique @default(cuid())
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
 }
 
 model Director {
-  id      String   @id @default(uuid())
-  userId  String   @unique
-  user    User     @relation(fields: [userId], references: [id])
-  announcements Announcement[]
-  calendarEvents Calendar[]
-}
-
-model Message {
-  id          String   @id @default(uuid())
-  senderId    String
-  receiverId  String
-  // sender      User     @relation("Sender", fields: [senderId], references: [id])
-  // receiver    User     @relation("Receiver", fields: [receiverId], references: [id])
-  content     String
-  createdAt   DateTime @default(now())
-}
-
-model Performance {
-  id        String   @id @default(uuid())
-  studentId String   @unique
-  student   Student  @relation(fields: [studentId], references: [id])
-  grade     Float
-  createdAt DateTime @default(now())
+  id           String         @id @unique @default(cuid())
+  user         User?          @relation(fields: [userId], references: [id])
+  userId       String?
+  Announcement Announcement[]
 }
 
 model Subject {
-  id        String   @id @default(uuid())
-  name      String
-  teacherId String?
-  teacher   Teacher? @relation(fields: [teacherId], references: [id])
-}
-
-model Section {
-  id          String   @id @default(uuid())
-  name        String
-  gradeLevelId String
-  gradeLevel  GradeLevel @relation(fields: [gradeLevelId], references: [id])
-  students    Student[]
-  teachers    Teacher[]
+  id                    String                  @id @unique @default(cuid())
+  name                  String?
+  GradeLevel            GradeLevel?             @relation(fields: [gradeLevelId], references: [id])
+  gradeLevelId          String?
+  Result                Result[]
+  TeacherSectionSubject TeacherSectionSubject[]
 }
 
 model GradeLevel {
-  id        String   @id @default(uuid())
-  level     String
-  sections  Section[]
+  id                String              @id @unique @default(cuid())
+  level             String?
+  subjectList       Subject[]
+  Section           Section[]
+  GradeLevelMessage GradeLevelMessage[]
 }
 
-model Attendance {
-  id        String   @id @default(uuid())
-  studentId String
-  student   Student @relation(fields: [studentId], references: [id])
-  teacherId String
-  teacher   Teacher @relation(fields: [teacherId], references: [id])
-  date      DateTime
-  status    String
+model Section {
+  id                    String                  @id @unique @default(cuid())
+  gradeLevel            GradeLevel?             @relation(fields: [gradeLevelId], references: [id])
+  teacherSectionSubject TeacherSectionSubject[]
+  name                  String?
+  homeRoom              Teacher?                @relation(fields: [teacherId], references: [id])
+  students              Student[]
+  gradeLevelId          String?
+  teacherId             String?
+  Result                Result[]
+  Roaster               Roaster[]
+  CollectiveResult      CollectiveResult[]
+  Attendance            Attendance[]
+  SectionMessage        SectionMessage[]
 }
 
-model Announcement {
-  id        String   @id @default(uuid())
-  directorId String
-  director  Director @relation(fields: [directorId], references: [id])
-  content   String
-  createdAt DateTime @default(now())
+model TeacherSectionSubject {
+  id        String   @id @unique @default(cuid())
+  teacher   Teacher? @relation(fields: [teacherId], references: [id])
+  subject   Subject? @relation(fields: [subjectId], references: [id])
+  section   Section? @relation(fields: [sectionId], references: [id])
+  teacherId String?
+  subjectId String?
+  sectionId String?
+  Student   Student? @relation(fields: [studentId], references: [id])
+  studentId String?
+}
+
+model Result {
+  id                 String            @id @unique @default(cuid())
+  test1              Float?
+  test2              Float?
+  mid                Float?
+  final              Float?
+  conduct            Conduct?
+  assignment         Float?
+  quiz               Float?
+  teacher            Teacher?          @relation(fields: [teacherId], references: [id])
+  student            Student?          @relation(fields: [studentId], references: [id])
+  section            Section?          @relation(fields: [sectionId], references: [id])
+  subject            Subject?          @relation(fields: [subjectId], references: [id])
+  teacherId          String?
+  studentId          String?
+  sectionId          String?
+  subjectId          String?
+  CollectiveResult   CollectiveResult? @relation(fields: [collectiveResultId], references: [id])
+  collectiveResultId String?
+}
+
+model Roaster {
+  id               String             @id @unique @default(cuid())
+  section          Section?           @relation(fields: [sectionId], references: [id])
+  collectiveResult CollectiveResult[]
+  sectionId        String?
+}
+
+model CollectiveResult {
+  id        String   @id @unique @default(cuid())
+  student   Student? @relation(fields: [studentId], references: [id])
+  result    Result[]
+  section   Section? @relation(fields: [sectionId], references: [id])
+  rank      Int?
+  feedback  String?
+  Roaster   Roaster? @relation(fields: [roasterId], references: [id])
+  roasterId String?
+  studentId String?
+  sectionId String?
 }
 
 model Calendar {
-  id          String   @id @default(uuid())
-  directorId  String
-  director    Director @relation(fields: [directorId], references: [id])
-  eventTitle  String
-  eventDate   DateTime
+  id          String    @id @unique @default(cuid())
+  title       String?
+  description String?
+  startDate   DateTime?
+  endDate     DateTime? // Fixed data type
+  createdBy   User?     @relation(fields: [userId], references: [id])
+  userId      String?
 }
 
-model Roster {
-  id        String   @id @default(uuid())
-  studentId String @unique
-  student   Student @relation(fields: [studentId], references: [id])
-  markedBy  String
-  teacher   Teacher @relation(fields: [markedBy], references: [id])
+model Attendance {
+  id        String    @id @unique @default(cuid())
+  student   Student?  @relation(fields: [studentId], references: [id])
+  section   Section?  @relation(fields: [sectionId], references: [id])
+  date      DateTime?
+  status    status    @default(PRESENT) // Default value added
+  studentId String?
+  sectionId String?
+}
+
+model Announcement {
+  id          String    @id @unique @default(cuid())
+  topic       String?
+  description String?
+  image       String?
+  createdBy   Director? @relation(fields: [directorId], references: [id])
+  directorId  String?
+}
+
+model Message {
+  id         String   @id @unique @default(cuid())
+  content    String?
+  senderId   String
+  receiverId String
+  createdAt  DateTime @default(now())
+
+  sender   User @relation(name: "SentMessages", fields: [senderId], references: [id])
+  receiver User @relation(name: "ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+model SectionMessage {
+  id        String    @id @unique @default(cuid())
+  content   String?
+  createdAt DateTime?
+  section   Section?  @relation(fields: [sectionId], references: [id])
+  createdBy User?     @relation(fields: [userId], references: [id])
+  image     String?
+  sectionId String?
+  userId    String?
+}
+
+model GradeLevelMessage {
+  id           String      @id @unique @default(cuid())
+  content      String?
+  image        String?
+  createdAt    DateTime?
+  gradeLevel   GradeLevel? @relation(fields: [gradeLevelId], references: [id])
+  gradeLevelId String?
+}
+
+enum Conduct {
+  A
+  B
+  C
+  D
+}
+
+enum status {
+  PRESENT
+  ABSENT
+  EXECUSED
+}
+
+enum USER_ROLE {
+  UNKNOWN
+  DIRECTOR
+  PARENT
+  TEACHER
 }

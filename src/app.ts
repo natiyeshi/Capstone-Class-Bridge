@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(middlewares.limiter);
 
 // Registring routes
-app.use(routes.helloRouter);
+app.use("/api/v1/auth", routes.authRoute);
 
 // Route error handling middleware
 app.use(middlewares.routeErrorHandlingMiddleware);
