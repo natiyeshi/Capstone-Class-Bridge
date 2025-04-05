@@ -15,6 +15,17 @@ app.use(middlewares.limiter);
 
 // Registring routes
 app.use("/api/v1/auth", routes.authRoute);
+app.use("/api/v1/users", routes.userRoute);
+app.use("/api/v1/teacher", routes.teacherRoute);
+app.use("/api/v1/parent", routes.parentRoute);
+app.use("/api/v1/director", routes.directorRoute);
+app.use("/api/v1/subject", routes.subjectRoute);
+app.use("/api/v1/gradeLevel", routes.gradeLevelRoute);
+app.use("/api/v1/section", routes.sectionRoute);
+app.use("/api/v1/student", routes.studentRoute);
+app.use("/api/v1/calendar", routes.calendarRoute);
+app.use("/api/v1/attendance", routes.attendanceRoute);
+app.use("/api/v1/announcement", routes.announcementRoute);
 
 // Route error handling middleware
 app.use(middlewares.routeErrorHandlingMiddleware);

@@ -1,31 +1,26 @@
 import { StatusCodes } from "http-status-codes";
 import { asyncWrapper, RouteError, sendApiResponse } from "../utils";
 import { db, passwordCrypt, zodErrorFmt } from "../libs";
-import { Parent } from "@prisma/client";
+import { Student } from "@prisma/client";
 import { authValidator } from "../validators";
 
-export const getParentsController = asyncWrapper(async (req, res) => {
-  const users = await db.parent.findMany({
+export const getStudentsController = asyncWrapper(async (req, res) => {
+  const users = await db.student.findMany({
     include:{
-        user: true,
-        students: {
-            include: {
-                user: true,
-            }
-        },
+        user: true
     }
   });
   return sendApiResponse({
     res,
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Parents retrived successfully",
+    message: "Students retrived successfully",
     result: users,
   });
 });
 
-export const createParentController = asyncWrapper(async (req, res) => {
-   const bodyValidation = authValidator.signUpSchema.safeParse(req.body);
+export const createStudentController = asyncWrapper(async (req, res) => {
+   const bodyValidation = authValidator.signUpStudentSchema.safeParse(req.body);
    
      if (!bodyValidation.success)
        throw RouteError.BadRequest(
@@ -39,6 +34,12 @@ export const createParentController = asyncWrapper(async (req, res) => {
    
      if (existingUser) throw RouteError.BadRequest("Email already in use.");
    
+     const existingParent = await db.parent.findUnique({
+        where: { id: bodyValidation.data.parentId },
+      });
+    
+      if (!existingParent) throw RouteError.BadRequest("Parent doesn't exist.");
+    
      const hashedPassword = await passwordCrypt.hashPassword(
        bodyValidation.data.password
      );
@@ -55,9 +56,10 @@ export const createParentController = asyncWrapper(async (req, res) => {
    
      const { password, ...userDto } = user;
 
-    const parent = await db.parent.create({
+    const student = await db.student.create({
         data : {
             userId : user.id,
+            parentId : bodyValidation.data.parentId,
         },
         include : {
             user : true,
@@ -68,7 +70,7 @@ export const createParentController = asyncWrapper(async (req, res) => {
       res,
       statusCode: StatusCodes.OK,
       success: true,
-      message: "Parent created successfully",
-      result: parent,
+      message: "Student created successfully",
+      result: student,
     });
   });

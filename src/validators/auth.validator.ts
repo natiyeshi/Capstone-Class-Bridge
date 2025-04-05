@@ -23,6 +23,36 @@ export const signUpSchema = z.object({
   phoneNumber: z.string({ message: "Phone number has to be a string" }),
 })
 
+export const signUpStudentSchema = z.object({
+ 
+  firstName: z
+    .string({ message: "First name has to be a string" })
+    .trim()
+    .min(1, {
+      message: "First name is required.",
+    }),
+  lastName: z
+    .string({ message: "Last name has to be a string" })
+    .trim()
+    .min(1, {
+      message: "Last name is required.",
+    }),
+  email: z.string({ message: "Email has to be a string" }).email({
+    message: "Invalid email.",
+  }),
+  password: z.string({ message: "Password has to be a string" }).trim().min(1, {
+    message: "Password field is required.",
+  }),
+  phoneNumber: z.string({ message: "Phone number has to be a string" }),
+  parentId: z
+  .string({ message: "Parent Id has to be a string" })
+  .trim()
+  .cuid({ message : "Invalid Parent Id" })
+  .min(1, {
+    message: "Parent Id is required.",
+  }),
+})
+
 
 export const signInSchema = z.object({
   email: z.string({ message: "Email has to be a string" }).email({

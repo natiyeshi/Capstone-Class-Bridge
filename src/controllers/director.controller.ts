@@ -1,30 +1,25 @@
 import { StatusCodes } from "http-status-codes";
 import { asyncWrapper, RouteError, sendApiResponse } from "../utils";
 import { db, passwordCrypt, zodErrorFmt } from "../libs";
-import { Parent } from "@prisma/client";
+import { Director } from "@prisma/client";
 import { authValidator } from "../validators";
 
-export const getParentsController = asyncWrapper(async (req, res) => {
-  const users = await db.parent.findMany({
+export const getDirectorsController = asyncWrapper(async (req, res) => {
+  const users = await db.director.findMany({
     include:{
-        user: true,
-        students: {
-            include: {
-                user: true,
-            }
-        },
+        user: true
     }
   });
   return sendApiResponse({
     res,
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Parents retrived successfully",
+    message: "Directors retrived successfully",
     result: users,
   });
 });
 
-export const createParentController = asyncWrapper(async (req, res) => {
+export const createDirectorController = asyncWrapper(async (req, res) => {
    const bodyValidation = authValidator.signUpSchema.safeParse(req.body);
    
      if (!bodyValidation.success)
@@ -55,7 +50,7 @@ export const createParentController = asyncWrapper(async (req, res) => {
    
      const { password, ...userDto } = user;
 
-    const parent = await db.parent.create({
+    const director = await db.director.create({
         data : {
             userId : user.id,
         },
@@ -68,7 +63,7 @@ export const createParentController = asyncWrapper(async (req, res) => {
       res,
       statusCode: StatusCodes.OK,
       success: true,
-      message: "Parent created successfully",
-      result: parent,
+      message: "Director created successfully",
+      result: director,
     });
   });
