@@ -26,6 +26,7 @@ app.use("/api/v1/student", routes.studentRoute);
 app.use("/api/v1/calendar", routes.calendarRoute);
 app.use("/api/v1/attendance", routes.attendanceRoute);
 app.use("/api/v1/announcement", routes.announcementRoute);
+app.use("/api/v1/result", routes.resultRouter);
 
 // Route error handling middleware
 app.use(middlewares.routeErrorHandlingMiddleware);

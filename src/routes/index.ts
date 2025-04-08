@@ -10,6 +10,7 @@ import sectionRoute from "./section.routes";
 import calendarRoute from "./calendar.routes";
 import attendanceRoute from "./attendance.routes";
 import announcementRoute from "./announcement.routes";
+import resultRouter from "./result.routes";
 
 export default {
   authRoute,
@@ -23,5 +24,6 @@ export default {
   sectionRoute,
   calendarRoute,
   attendanceRoute,
-  announcementRoute
+  announcementRoute,
+  resultRouter
 };
