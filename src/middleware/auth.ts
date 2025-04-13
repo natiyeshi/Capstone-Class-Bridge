@@ -6,11 +6,11 @@ const authenticationMiddleWare = asyncWrapper(async (req, _, next) => {
   const authorizationHeader = req.headers.authorization;
 
   if (!authorizationHeader)
-    throw new RouteError.Unauthorized("You are't authenticated");
+    throw  RouteError.Unauthorized("You are't authenticated");
   const token = authorizationHeader.split(" ")[1];
 
   if (!token || !token.trim())
-    throw new RouteError.BadRequest(
+    throw  RouteError.BadRequest(
       "Token not provided in autherization header."
     );
 
