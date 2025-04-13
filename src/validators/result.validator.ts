@@ -6,7 +6,7 @@ export const CreateResultSchema = z.object({
     test2: z.number({ message: 'Test2 must be a number' }).optional().nullable(),
     mid: z.number({ message: 'Mid must be a number' }).optional().nullable(),
     final: z.number({ message: 'Final must be a number' }).optional().nullable(),
-    conduct: z.nativeEnum(Conduct).optional(), // Updated to use the Conduct enum
+    // conduct: z.nativeEnum(Conduct).optional(), // Updated to use the Conduct enum
     assignment: z.number({ message: 'Assignment must be a number' }).optional().nullable(),
     quiz: z.number({ message: 'Quiz must be a number' }).optional().nullable(),
     teacherId: z.string({ message: 'Invalid teacher ID' }).cuid({ message: 'Teacher ID must be a valid cuid' }),

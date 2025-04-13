@@ -51,7 +51,6 @@ export const updateResultsController = asyncWrapper(async (req, res) => {
                     test2: bodyValidation.data.test2,
                     mid: bodyValidation.data.mid,
                     final: bodyValidation.data.final,
-                    conduct: bodyValidation.data.conduct,
                     assignment: bodyValidation.data.assignment,
                     quiz: bodyValidation.data.quiz,
                     teacherId: bodyValidation.data.teacherId,
@@ -82,7 +81,6 @@ export const updateResultsController = asyncWrapper(async (req, res) => {
                 test2: isCh(bodyValidation.data.test2,user?.test2),
                 mid:  isCh(bodyValidation.data.mid,user?.mid),
                 final: isCh(bodyValidation.data.final,user?.final),
-                conduct: isCh(bodyValidation.data.conduct,user?.conduct),
                 assignment: isCh(bodyValidation.data.assignment,user?.assignment),
                 quiz: isCh(bodyValidation.data.quiz,user?.quiz),
             },
@@ -131,3 +129,23 @@ export const updateResultsController = asyncWrapper(async (req, res) => {
       result: result,
     });
   });
+
+
+  
+  export const deleteResultController = asyncWrapper(async (req, res) => {
+      const queryParamValidation = queryValidator
+          .queryParamIDValidator("Result ID not provided or invalid.")
+          .safeParse(req.params);
+      const result = await db.result.delete({
+        where:{
+          id: queryParamValidation.data!.id,
+         }
+      });
+      return sendApiResponse({
+        res,  
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Result deleted successfully",
+        result: result,
+      });
+    });

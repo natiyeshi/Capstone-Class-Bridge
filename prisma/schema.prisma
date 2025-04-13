@@ -116,7 +116,6 @@ model Result {
   test2              Float?
   mid                Float?
   final              Float?
-  conduct            Conduct?
   assignment         Float?
   quiz               Float?
   teacher            Teacher?          @relation(fields: [teacherId], references: [id])
@@ -135,20 +134,23 @@ model Roaster {
   id               String             @id @unique @default(cuid())
   section          Section?           @relation(fields: [sectionId], references: [id])
   collectiveResult CollectiveResult[]
-  sectionId        String?
+  sectionId        String?            @unique()
 }
 
 model CollectiveResult {
-  id        String   @id @unique @default(cuid())
-  student   Student? @relation(fields: [studentId], references: [id])
-  result    Result[]
-  section   Section? @relation(fields: [sectionId], references: [id])
-  rank      Int?
-  feedback  String?
-  Roaster   Roaster? @relation(fields: [roasterId], references: [id])
-  roasterId String?
-  studentId String?
-  sectionId String?
+  id          String   @id @unique @default(cuid())
+  student     Student? @relation(fields: [studentId], references: [id])
+  result      Result[]
+  section     Section? @relation(fields: [sectionId], references: [id])
+  conduct     Conduct?
+  rank        Int?
+  feedback    String?
+  Roaster     Roaster? @relation(fields: [roasterId], references: [id])
+  roasterId   String?
+  studentId   String?  @unique()
+  sectionId   String?
+  isAvailable Boolean  @default(false)
+  totalScore  Float?   @default(0.0)
 }
 
 model Calendar {
@@ -198,7 +200,7 @@ model SectionMessage {
   content   String?
   createdAt DateTime?
   section   Section?  @relation(fields: [sectionId], references: [id])
-  createdBy User?     @relation(fields: [userId], references: [id])
+  senderId User?     @relation(fields: [userId], references: [id])
   image     String?
   sectionId String?
   userId    String?

@@ -11,6 +11,9 @@ import calendarRoute from "./calendar.routes";
 import attendanceRoute from "./attendance.routes";
 import announcementRoute from "./announcement.routes";
 import resultRouter from "./result.routes";
+import messageRouter from "./message.routes";
+import sectionMessageRouter from "./sectionMessage.routes";
+import collectiveResultRouter from "./collectiveResult.routes";
 
 export default {
   authRoute,
@@ -25,5 +28,8 @@ export default {
   calendarRoute,
   attendanceRoute,
   announcementRoute,
-  resultRouter
+  resultRouter,
+  collectiveResultRouter,
+  messageRouter,
+  sectionMessageRouter
 };
