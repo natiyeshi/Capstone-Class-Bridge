@@ -59,28 +59,28 @@ export const signInController = asyncWrapper(async (req, res) => {
   });
 
   if (!existingUser) throw RouteError.BadRequest("Invalid email or password");
-
-  if (existingUser.role === "UNKNOWN")
-    throw RouteError.BadRequest("Please wait while admin defines your role.");
-
   const isCorrectPassword = await passwordCrypt.verifyPassword(
     bodyValidation.data.password,
     existingUser.password
   );
+  
+   if (!isCorrectPassword)
+     throw RouteError.BadRequest("Invalid email or password");
 
-  if (!isCorrectPassword)
-    throw RouteError.BadRequest("Invalid email or password");
+  if (existingUser.role === "UNKNOWN")
+    throw RouteError.BadRequest("Please wait while admin defines your role.");
+
 
   const token = jwt.signToken({
     userId: existingUser.id,
     role: existingUser.role,
   });
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    signed: true,
-    expires: COOKIE_EXPIRATION,
-  });
+  // res.cookie("token", token, {
+  //   httpOnly: true,
+  //   signed: true,
+  //   expires: COOKIE_EXPIRATION,
+  // });
 
   const { password, ...userDto } = existingUser;
 

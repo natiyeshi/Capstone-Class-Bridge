@@ -45,6 +45,7 @@ export const createTeacherController = asyncWrapper(async (req, res) => {
          email: bodyValidation.data.email,
          phoneNumber: bodyValidation.data.phoneNumber,
          password: hashedPassword,
+         role : "TEACHER",
        },
      });
    
