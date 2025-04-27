@@ -190,7 +190,7 @@ model Message {
   senderId   String
   receiverId String
   createdAt  DateTime @default(now())
-
+  
   sender   User @relation(name: "SentMessages", fields: [senderId], references: [id])
   receiver User @relation(name: "ReceivedMessages", fields: [receiverId], references: [id])
 }

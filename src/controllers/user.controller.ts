@@ -27,3 +27,28 @@ export const getMe = asyncWrapper(async (req, res) => {
     result: users,
   });
 });
+
+
+export const updateUser = asyncWrapper(async (req, res) => {
+  const id = req.user?._id ?? null;
+  if (!id) throw RouteError.BadRequest("User Not Found!");
+
+  const { firstName, lastName, phoneNumber } = req.body;
+
+  if (!firstName || !lastName || !phoneNumber) {
+    throw RouteError.BadRequest("Missing required fields: firstName, lastName, or phoneNumber");
+  }
+
+  const updatedUser = await db.user.update({
+    where: { id },
+    data: { firstName, lastName, phoneNumber },
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "User updated successfully",
+    result: updatedUser,
+  });
+});
