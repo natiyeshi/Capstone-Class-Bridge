@@ -123,6 +123,47 @@ export const createParentController = asyncWrapper(async (req, res) => {
   });
 
 
+  export const activateParentController = asyncWrapper(async (req, res) => {
+      const { password } = req.body;
+      const id = req.user?._id ?? null;
+      
+      if (!id) throw RouteError.BadRequest("User not found.");
+      
+      const existingUser = await db.user.findUnique({
+        where: { id },
+      });
+    
+      if (!existingUser) throw RouteError.BadRequest("User doesn't exist in use.");
+    
+      const hashedPassword = await passwordCrypt.hashPassword(
+        password
+      );
+    
+      const parent = await db.parent.updateMany({
+        where: { userId : id },
+        data: {
+          isActivated: true,
+        },
+      });
+
+      const user = await db.user.update({
+        where: { id },
+        data: {
+          password: hashedPassword,
+        },
+      });
+    
+      const { password : a, ...userDto } = user;
+ 
+     return sendApiResponse({
+       res,
+       statusCode: StatusCodes.OK,
+       success: true,
+       message: "Parent Activated  successfully",
+       result: userDto,
+     });
+   });
+ 
 
 export const addStudentToParentController = asyncWrapper(async (req, res) => {
     const bodyValidation = Array.isArray(req.body) && req.body.every(item => typeof item === "string")

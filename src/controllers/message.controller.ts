@@ -16,15 +16,18 @@ export const getMessageController = asyncWrapper(async (req, res) => {
 
     const messages = await db.message.findMany({
       where: {
-        OR: [
-          { receiverId: bodyValidation.data.receiverId, senderId: bodyValidation.data.senderId,  },
-          { receiverId: bodyValidation.data.senderId, senderId: bodyValidation.data.receiverId, }
-        ],
+      OR: [
+        { receiverId: bodyValidation.data.receiverId, senderId: bodyValidation.data.senderId },
+        { receiverId: bodyValidation.data.senderId, senderId: bodyValidation.data.receiverId }
+      ],
       },
       include: {
-        receiver: true,
-        sender: true,
-      }
+      receiver: true,
+      sender: true,
+      },
+      orderBy: {
+      createdAt: 'asc', // Sort by createdAt in ascending order
+      },
     });
   return sendApiResponse({
     res,
@@ -61,6 +64,9 @@ export const createMessageController = asyncWrapper(async (req, res) => {
   
   });
 
+  
+
+
 // get response - api/v1/message/:id
 
 export const deleteMessageController = asyncWrapper(async (req, res) => {
@@ -82,4 +88,30 @@ export const deleteMessageController = asyncWrapper(async (req, res) => {
         message: "Message deleted successfully",
         result : message,
     });
+});
+
+
+
+export const seenMessageController = asyncWrapper(async (req, res) => {
+    
+  const queryParamValidation = queryValidator
+        .queryParamIDValidator("Message ID not provided or invalid.")
+        .safeParse(req.params);
+ 
+
+  const message = await db.message.update({
+      where: { id: queryParamValidation.data!.id },
+      data : {
+        seen : true
+      }
+  });
+
+
+  return sendApiResponse({
+      res,
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Message seened successfully",
+      result : message,
+  });
 });

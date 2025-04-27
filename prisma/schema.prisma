@@ -27,6 +27,7 @@ model User {
 
 model Teacher {
   id                    String                  @id @unique @default(cuid())
+  isActivated           Boolean                 @default(false)
   user                  User?                   @relation(fields: [userId], references: [id])
   userId                String?
   Section               Section[]
@@ -51,7 +52,8 @@ model Student {
 }
 
 model Parent {
-  id       String    @id @unique @default(cuid())
+  id          String  @id @unique @default(cuid())
+  isActivated Boolean @default(false)
   user     User?     @relation(fields: [userId], references: [id])
   userId   String?
   students Student[] // One-to-many relation to students
@@ -190,9 +192,9 @@ model Message {
   senderId   String
   receiverId String
   createdAt  DateTime @default(now())
-  
-  sender   User @relation(name: "SentMessages", fields: [senderId], references: [id])
-  receiver User @relation(name: "ReceivedMessages", fields: [receiverId], references: [id])
+  seen       Boolean  @default(false)
+  sender     User     @relation(name: "SentMessages", fields: [senderId], references: [id])
+  receiver   User     @relation(name: "ReceivedMessages", fields: [receiverId], references: [id])
 }
 
 model SectionMessage {
@@ -200,7 +202,7 @@ model SectionMessage {
   content   String?
   createdAt DateTime?
   section   Section?  @relation(fields: [sectionId], references: [id])
-  senderId User?     @relation(fields: [userId], references: [id])
+  senderId  User?     @relation(fields: [userId], references: [id])
   image     String?
   sectionId String?
   userId    String?
