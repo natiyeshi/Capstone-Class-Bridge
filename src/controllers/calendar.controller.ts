@@ -6,71 +6,71 @@ import queryValidator from "../validators/query.validator";
 
 
 export const getCalendarController = asyncWrapper(async (req, res) => {
-    const users = await db.calendar.findMany({
-      include:{
-       }
-    });
-    return sendApiResponse({
-      res,  
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: "Calendar retrived successfully",
-      result: users,
-    });
+  const users = await db.calendar.findMany({
+    include: {
+    }
   });
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Calendar retrived successfully",
+    result: users,
+  });
+});
 
-  
+
 export const getCalendarByIdController = asyncWrapper(async (req, res) => {
-    const queryParamValidation = queryValidator
-        .queryParamIDValidator("Calendar ID not provided or invalid.")
-        .safeParse(req.params);
-      
-        if (!queryParamValidation.success)
-          throw RouteError.BadRequest(
-            zodErrorFmt(queryParamValidation.error)[0].message,
-            zodErrorFmt(queryParamValidation.error)
-          );
-        
-      const calendar = await db.calendar.findFirst({
-        where:{
-          id: queryParamValidation.data.id,
-        },
-        include:{
-          createdBy : {
-            include : {
-              user : true,
-            }
-          },
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Calendar ID not provided or invalid.")
+    .safeParse(req.params);
+
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+
+  const calendar = await db.calendar.findFirst({
+    where: {
+      id: queryParamValidation.data.id,
+    },
+    include: {
+      createdBy: {
+        include: {
+          user: true,
         }
-      });
-      return sendApiResponse({
-        res,
-        statusCode: StatusCodes.OK,
-        success: true,
-        message: "Calendar retrived successfully",
-        result: calendar,
-      });
-    });
-
-
-    
-export const deleteCalendarController = asyncWrapper(async (req, res) => {
-    const queryParamValidation = queryValidator
-        .queryParamIDValidator("Calendar ID not provided or invalid.")
-        .safeParse(req.params);
-    const calendar = await db.calendar.delete({
-      where:{
-        id: queryParamValidation.data!.id,
-       }
-    });
-    return sendApiResponse({
-      res,  
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: "Calendar deleted successfully",
-      result: calendar,
-    });
+      },
+    }
   });
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Calendar retrived successfully",
+    result: calendar,
+  });
+});
+
+
+
+export const deleteCalendarController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Calendar ID not provided or invalid.")
+    .safeParse(req.params);
+  const calendar = await db.calendar.delete({
+    where: {
+      id: queryParamValidation.data!.id,
+    }
+  });
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Calendar deleted successfully",
+    result: calendar,
+  });
+});
 
 
 export const createCalendarController = asyncWrapper(async (req, res) => {
@@ -85,13 +85,13 @@ export const createCalendarController = asyncWrapper(async (req, res) => {
 
   const { title, description, startDate, endDate, userId } = bodyValidation.data;
 
-const userExists = await db.director.findUnique({
+  const userExists = await db.director.findUnique({
     where: { id: userId },
-});
+  });
 
-if (!userExists) {
+  if (!userExists) {
     throw RouteError.BadRequest("Director does not exist");
-}
+  }
 
 
   const calendar = await db.calendar.create({
@@ -101,7 +101,7 @@ if (!userExists) {
       startDate,
       endDate,
       createdBy: {
-        connect: { id: userId } 
+        connect: { id: userId }
       }
     },
   });
