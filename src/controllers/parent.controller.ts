@@ -135,6 +135,12 @@ export const createParentController = asyncWrapper(async (req, res) => {
     
       if (!existingUser) throw RouteError.BadRequest("User doesn't exist in use.");
     
+      const existingParent = await db.parent.findFirst({
+        where: { userId : id },
+      });
+  
+      if(existingParent?.isActivated) throw RouteError.BadRequest("Parent already activated.");
+      
       const hashedPassword = await passwordCrypt.hashPassword(
         password
       );

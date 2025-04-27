@@ -81,7 +81,13 @@ export const createTeacherController = asyncWrapper(async (req, res) => {
     });
   
     if (!existingUser) throw RouteError.BadRequest("User doesn't exist in use.");
-  
+    
+    const existingTeacher = await db.teacher.findFirst({
+      where: { userId : id },
+    });
+
+    if(existingTeacher?.isActivated) throw RouteError.BadRequest("Teacher already activated.");
+    
     const hashedPassword = await passwordCrypt.hashPassword(
       password
     );
