@@ -8,7 +8,7 @@
     "build": "npm run clean && tsc",
     "clean": "rimraf ./dist"
   },
-  "author": "Nesredin Getahun",
+  "author": "Natnael Yeshiwas",
   "license": "ISC",
   "description": "A modern Node.js TypeScript template with essential configurations for building RESTful APIs. Includes support for environment variable management, logging, and development tooling.",
   "dependencies": {

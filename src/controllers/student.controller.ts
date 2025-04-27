@@ -3,6 +3,7 @@ import { asyncWrapper, RouteError, sendApiResponse } from "../utils";
 import { db, passwordCrypt, zodErrorFmt } from "../libs";
 import { Student } from "@prisma/client";
 import { authValidator } from "../validators";
+import queryValidator from "../validators/query.validator";
 
 export const getStudentsController = asyncWrapper(async (req, res) => {
   const users = await db.student.findMany({
@@ -76,3 +77,22 @@ export const createStudentController = asyncWrapper(async (req, res) => {
       result: student,
     });
   });
+
+
+export const deleteStudentController = asyncWrapper(async (req, res) => {
+     const queryParamValidation = queryValidator
+              .queryParamIDValidator("Message ID not provided or invalid.")
+              .safeParse(req.params);
+            
+      const student = await db.student.delete({
+              where: { id: queryParamValidation.data!.id },
+      });
+                
+     return sendApiResponse({
+       res,
+       statusCode: StatusCodes.OK,
+       success: true,
+       message: "Student Deleted successfully",
+       result: student,
+     });
+   });

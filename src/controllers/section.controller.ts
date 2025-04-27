@@ -72,6 +72,7 @@ export const getSectionByIdController = asyncWrapper(async (req, res) => {
 
 
 
+
 export const createSectionController = asyncWrapper(async (req, res) => {
     
     const bodyValidation = CreateSectionSchema.safeParse(req.body);
@@ -151,6 +152,70 @@ export const createSectionController = asyncWrapper(async (req, res) => {
   });
 
 
+  export const addStudentOnSectionController = asyncWrapper(async (req, res) => {
+    
+    const bodyValidation = Array.isArray(req.body) && req.body.every(item => typeof item === "string") 
+      ? req.body 
+      : (() => { 
+        throw RouteError.BadRequest("Request body must be an array of strings."); 
+      })();
+    const queryParamValidation = queryValidator
+      .queryParamIDValidator("Section ID not provided or invalid.")
+      .safeParse(req.params);
+
+    if (!queryParamValidation.success)
+      throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+      );
+
+    const existingSection = await db.section.findUnique({
+      where: { id: queryParamValidation.data.id },
+    });
+
+    if (!existingSection)
+      throw RouteError.NotFound("Section not found with the provided ID.");
+
+    const students = bodyValidation ?? [];
+
+    const validStudents = await db.student.findMany({
+      where: { id: { in: students } },
+      select: { id: true },
+    });
+
+    const validStudentIds = validStudents.map(student => student.id);
+
+    const invalidStudents = students.filter(id => !validStudentIds.includes(id));
+
+    if (invalidStudents.length > 0) {
+      throw RouteError.BadRequest(`Invalid student IDs: ${invalidStudents.join(", ")}`);
+    }
+
+    const updatedSection = await db.section.update({
+      where: { id: queryParamValidation.data.id },
+      data: {
+      students: {
+        connect: validStudentIds.map(studentId => ({ id: studentId })),
+      },
+      },
+      include: {
+      students: {
+        include: {
+        user: true,
+        },
+      },
+      },
+    });
+
+    return sendApiResponse({
+      res,
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Students added to section successfully",
+      result: updatedSection,
+    });
+    
+  });
 // export const createSectionController = asyncWrapper(async (req, res) => {
     
 //     const bodyValidation = SectionSchema.safeParse(req.body);
