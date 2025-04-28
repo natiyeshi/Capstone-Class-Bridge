@@ -20,6 +20,29 @@ export const getTeachersController = asyncWrapper(async (req, res) => {
   });
 });
 
+// getTeachersByIdController
+
+
+export const getTeachersByIdController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+  .queryParamIDValidator("Teacher ID not provided or invalid.")
+  .safeParse(req.params);
+
+  const teacher = await db.teacher.findUnique({
+    where : { id: queryParamValidation.data!.id },
+    include:{
+        user: true
+    }
+  });
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Teacher retrived successfully",
+    result: teacher,
+  });
+});
+
 
 export const createTeacherController = asyncWrapper(async (req, res) => {
    const bodyValidation = authValidator.signUpSchema.safeParse(req.body);
