@@ -3,6 +3,7 @@ import { asyncWrapper, RouteError, sendApiResponse } from "../utils";
 import { db, passwordCrypt, zodErrorFmt } from "../libs";
 import { Teacher } from "@prisma/client";
 import { authValidator } from "../validators";
+import queryValidator from "../validators/query.validator";
 
 export const getTeachersController = asyncWrapper(async (req, res) => {
   const users = await db.teacher.findMany({
@@ -18,6 +19,7 @@ export const getTeachersController = asyncWrapper(async (req, res) => {
     result: users,
   });
 });
+
 
 export const createTeacherController = asyncWrapper(async (req, res) => {
    const bodyValidation = authValidator.signUpSchema.safeParse(req.body);

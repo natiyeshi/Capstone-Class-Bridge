@@ -20,6 +20,63 @@ export const getStudentsController = asyncWrapper(async (req, res) => {
   });
 });
 
+
+export const getStudentByIdController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+  .queryParamIDValidator("Student ID not provided or invalid.")
+  .safeParse(req.params);
+
+  const student = await db.student.findUnique({
+    where : { id: queryParamValidation.data!.id },
+    include:{
+        user: true
+    }
+  });
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Student retrived successfully",
+    result: student,
+  });
+});
+
+export const updateStudentController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+       .queryParamIDValidator("Student ID not provided or invalid.")
+       .safeParse(req.params);
+
+  const { firstName, lastName } = req.body;
+
+  if (!firstName || !lastName) throw RouteError.NotFound("First Name and Last Name should be provided not found.");
+
+  const student = await db.student.findUnique({
+    where: { id: queryParamValidation.data!.id },
+    include: { user: true },
+  });
+
+  if (!student) throw RouteError.NotFound("Student not found.");
+
+  const updatedUser = await db.user.update({
+    where: { id: student.userId! },
+    data: {
+      firstName: firstName,
+      lastName: lastName,
+    },
+  });
+
+  const { password, ...userDto } = updatedUser;
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Student updated successfully",
+    result: userDto,
+  });
+});
+
+
 export const createStudentController = asyncWrapper(async (req, res) => {
    const bodyValidation = authValidator.signUpStudentSchema.safeParse(req.body);
    
