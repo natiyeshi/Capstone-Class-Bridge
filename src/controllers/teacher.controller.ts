@@ -118,3 +118,23 @@ export const createTeacherController = asyncWrapper(async (req, res) => {
      result: userDto,
    });
  });
+
+
+ 
+ export const deleteTeacherController = asyncWrapper(async (req, res) => {
+      const queryParamValidation = queryValidator
+               .queryParamIDValidator("Message ID not provided or invalid.")
+               .safeParse(req.params);
+             
+       const teacher = await db.teacher.delete({
+               where: { id: queryParamValidation.data!.id },
+       });
+                 
+      return sendApiResponse({
+        res,
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Teacher Deleted successfully",
+        result: teacher,
+      });
+    });
