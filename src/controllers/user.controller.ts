@@ -44,13 +44,18 @@ export const updateUser = asyncWrapper(async (req, res) => {
 
   const { firstName, lastName, phoneNumber } = req.body;
 
-  if (!firstName || !lastName || !phoneNumber) {
-    throw RouteError.BadRequest("Missing required fields: firstName, lastName, or phoneNumber");
+  const user = await db.user.findUnique({ where: { id } });
+  if (!user) {
+    throw RouteError.BadRequest("User not found.");
   }
 
   const updatedUser = await db.user.update({
     where: { id },
-    data: { firstName, lastName, phoneNumber },
+    data: {
+      firstName: firstName ? firstName : user.firstName,
+      lastName: lastName ? lastName : user.lastName,
+      phoneNumber: phoneNumber ? phoneNumber : user.phoneNumber,
+    },
   });
 
   return sendApiResponse({
@@ -68,13 +73,19 @@ export const updateMe = asyncWrapper(async (req, res) => {
 
   const { firstName, lastName, phoneNumber } = req.body;
 
-  if (!firstName || !lastName || !phoneNumber) {
-    throw RouteError.BadRequest("Missing required fields: firstName, lastName, or phoneNumber");
+  const user = await db.user.findUnique({ where: { id } });
+  
+  if (!user) {
+    throw RouteError.BadRequest("User not found.");
   }
 
   const updatedUser = await db.user.update({
     where: { id },
-    data: { firstName, lastName, phoneNumber },
+    data: {
+      firstName: firstName ? firstName : user.firstName,
+      lastName: lastName ? lastName : user.lastName,
+      phoneNumber: phoneNumber ? phoneNumber : user.phoneNumber,
+    },
   });
 
   return sendApiResponse({
