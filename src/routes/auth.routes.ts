@@ -7,7 +7,7 @@ import middleware from "../middleware";
 
 const router = Router();
 
-router.post("/sign-up", signUpController);
+// router.post("/sign-up", signUpController);
 router.post("/sign-in", signInController);
 // router.patch(
 //   "/change-password",

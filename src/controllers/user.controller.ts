@@ -32,7 +32,7 @@ export const getMe = asyncWrapper(async (req, res) => {
 
 export const updateUser = asyncWrapper(async (req, res) => {
   const queryParamValidation = queryValidator
-    .queryParamIDValidator("Teacher ID not provided or invalid.")
+    .queryParamIDValidator("User ID not provided or invalid.")
     .safeParse(req.params);
 
   if(!queryParamValidation.success) {
@@ -74,7 +74,7 @@ export const updateMe = asyncWrapper(async (req, res) => {
   const { firstName, lastName, phoneNumber } = req.body;
 
   const user = await db.user.findUnique({ where: { id } });
-  
+
   if (!user) {
     throw RouteError.BadRequest("User not found.");
   }
@@ -96,3 +96,42 @@ export const updateMe = asyncWrapper(async (req, res) => {
     result: updatedUser,
   });
 });
+
+
+
+ export const deleteUserController = asyncWrapper(async (req, res) => {
+      const queryParamValidation = queryValidator
+               .queryParamIDValidator("Message ID not provided or invalid.")
+               .safeParse(req.params);
+             
+       const user = await db.user.delete({
+               where: { id: queryParamValidation.data!.id },
+       });
+                 
+      return sendApiResponse({
+        res,
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "User Deleted successfully",
+        result: user,
+      });
+    });
+
+
+    
+    export const getUserById = asyncWrapper(async (req, res) => {
+      const queryParamValidation = queryValidator
+      .queryParamIDValidator("User ID not provided or invalid.")
+      .safeParse(req.params);
+    
+      const user = await db.user.findUnique({
+        where : { id: queryParamValidation.data!.id },
+      });
+      return sendApiResponse({
+        res,
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "User retrived successfully",
+        result: user,
+      });
+    });
