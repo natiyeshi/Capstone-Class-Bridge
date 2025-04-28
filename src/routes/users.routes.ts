@@ -6,7 +6,7 @@ const router = Router();
 
 router.get("/", getUsersController);
 router.get("/get-me",Auth.authenticationMiddleWare, getMe);
-router.post("/update",Auth.authenticationMiddleWare, updateUser);
+router.put("/update",Auth.authenticationMiddleWare, updateUser);
 
 
 export default router;
