@@ -42,7 +42,8 @@ export const updateUser = asyncWrapper(async (req, res) => {
   const id = queryParamValidation.data.id;
   if (!id) throw RouteError.BadRequest("User Not Found!");
 
-  const { firstName, lastName, phoneNumber } = req.body;
+  const { firstName, lastName, phoneNumber,gender,dateOfBirth,profile } = req.body;
+
 
   const user = await db.user.findUnique({ where: { id } });
   if (!user) {
@@ -55,6 +56,9 @@ export const updateUser = asyncWrapper(async (req, res) => {
       firstName: firstName ? firstName : user.firstName,
       lastName: lastName ? lastName : user.lastName,
       phoneNumber: phoneNumber ? phoneNumber : user.phoneNumber,
+      gender: gender ? gender : user.gender,
+      dateOfBirth: dateOfBirth ? dateOfBirth : user.dateOfBirth,
+      profile: profile ? profile : user.profile,
     },
   });
 
@@ -71,7 +75,7 @@ export const updateMe = asyncWrapper(async (req, res) => {
   const id = req.user?._id ?? null;
   if (!id) throw RouteError.BadRequest("User Not Found!");
 
-  const { firstName, lastName, phoneNumber } = req.body;
+  const { firstName, lastName, phoneNumber,gender,dateOfBirth,profile } = req.body;
 
   const user = await db.user.findUnique({ where: { id } });
 
@@ -85,6 +89,9 @@ export const updateMe = asyncWrapper(async (req, res) => {
       firstName: firstName ? firstName : user.firstName,
       lastName: lastName ? lastName : user.lastName,
       phoneNumber: phoneNumber ? phoneNumber : user.phoneNumber,
+      gender: gender ? gender : user.gender,
+      dateOfBirth: dateOfBirth ? dateOfBirth : user.dateOfBirth,
+      profile: profile ? profile : user.profile,
     },
   });
 

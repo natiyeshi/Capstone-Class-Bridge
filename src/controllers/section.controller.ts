@@ -69,10 +69,6 @@ export const getSectionByIdController = asyncWrapper(async (req, res) => {
   });
 });
 
-
-
-
-
 export const createSectionController = asyncWrapper(async (req, res) => {
     
     const bodyValidation = CreateSectionSchema.safeParse(req.body);
@@ -216,6 +212,48 @@ export const createSectionController = asyncWrapper(async (req, res) => {
     });
     
   });
+
+  export const getSectionByGradeLevelController = asyncWrapper(async (req, res) => {
+    const queryParamValidation = queryValidator
+      .queryParamIDValidator("Grade Level ID not provided or invalid.")
+      .safeParse(req.params);
+
+    if (!queryParamValidation.success)
+      throw RouteError.BadRequest(
+        zodErrorFmt(queryParamValidation.error)[0].message,
+        zodErrorFmt(queryParamValidation.error)
+      );
+
+    const sections = await db.section.findMany({
+      where: {
+        gradeLevelId: queryParamValidation.data.id,
+      },
+      include: {
+        students: {
+          include: {
+            user: true,
+          },
+        },
+        gradeLevel: true,
+        homeRoom: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return sendApiResponse({
+      res,
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Sections retrieved successfully by grade level",
+      result: sections,
+    });
+  });
+
+
+
 // export const createSectionController = asyncWrapper(async (req, res) => {
     
 //     const bodyValidation = SectionSchema.safeParse(req.body);

@@ -21,6 +21,15 @@ export const signUpSchema = z.object({
     message: "Password field is required.",
   }),
   phoneNumber: z.string({ message: "Phone number has to be a string" }),
+  gender: z
+    .enum(["M", "F"], { message: "Gender must be either 'M' or 'F'" })
+    .optional(),
+  dateOfBirth: z
+    .string({ message: "Date of birth has to be a string" })
+    .optional(),
+  profile: z
+    .string({ message: "Profile has to be a string" })
+    .optional(),
 })
 
 export const signUpStudentSchema = z.object({
@@ -44,6 +53,15 @@ export const signUpStudentSchema = z.object({
     message: "Password field is required.",
   }),
   phoneNumber: z.string({ message: "Phone number has to be a string" }),
+  gender: z
+    .enum(["M", "F"], { message: "Gender must be either 'M' or 'F'" })
+    .optional(),
+  profile: z
+    .string({ message: "Profile has to be a string" })
+    .optional(),
+  dateOfBirth: z
+    .string({ message: "Date of birth has to be a string" })
+    .optional(),
   parentId: z
   .string({ message: "Parent Id has to be a string" })
   .trim()

@@ -45,6 +45,8 @@ export const createDirectorController = asyncWrapper(async (req, res) => {
          email: bodyValidation.data.email,
          phoneNumber: bodyValidation.data.phoneNumber,
          password: hashedPassword,
+         gender: bodyValidation.data.gender,
+         dateOfBirth: bodyValidation.data.dateOfBirth,
          role : "DIRECTOR",
        },
      });

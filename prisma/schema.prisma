@@ -13,7 +13,10 @@ model User {
   password         String
   firstName        String
   lastName         String
+  profile      String?
   phoneNumber      String?
+  gender          String?
+  dateOfBirth      DateTime?
   role             USER_ROLE?       @default(UNKNOWN)
   // Relations
   Teacher          Teacher[]
