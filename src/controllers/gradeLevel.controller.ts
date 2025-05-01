@@ -149,6 +149,7 @@ export const updategradeLevelController = asyncWrapper(async (req, res) => {
       zodErrorFmt(queryParamValidation.error)[0].message,
       zodErrorFmt(queryParamValidation.error)
     );
+    
     const bodyValidation = GradeLevelSchema.safeParse(
       req.body
     );
