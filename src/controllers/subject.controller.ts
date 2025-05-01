@@ -76,3 +76,76 @@ export const createSubjectController = asyncWrapper(async (req, res) => {
     });
   });
 
+
+  
+export const updateSubjectController = asyncWrapper(async (req, res) => {
+    
+  const bodyValidation = SubjectValidator.safeParse(req.body);
+  
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Student ID not provided or invalid.")
+    .safeParse(req.params);
+
+  if(!queryParamValidation.success)
+    throw RouteError.BadRequest("Subject ID not provided or invalid.");
+
+  if (!bodyValidation.success)
+      throw RouteError.BadRequest(
+          zodErrorFmt(bodyValidation.error)[0].message,
+          zodErrorFmt(bodyValidation.error)
+      );
+
+  const existingSubject = await db.subject.findFirst({
+      where: { id: queryParamValidation.data.id },
+  });
+  
+  if (!existingSubject) throw RouteError.BadRequest("Subject does not exist.");
+  
+  const subject = await db.subject.update({
+    where :{
+      id : queryParamValidation.data.id,
+    },
+    data : {
+        name : bodyValidation.data.name,
+    }
+  });
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Subject updated successfully",
+    result: subject,
+  });
+});
+
+
+export const deleteSubjectController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Subject ID not provided or invalid.")
+    .safeParse(req.params);
+
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+
+  const existingSubject = await db.subject.findFirst({
+    where: { id: queryParamValidation.data.id },
+  });
+
+  if (!existingSubject) throw RouteError.BadRequest("Subject does not exist.");
+
+  const subject = await db.subject.delete({
+    where: { id: queryParamValidation.data.id },
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Subject deleted successfully",
+    result: subject,
+  });
+});
+
