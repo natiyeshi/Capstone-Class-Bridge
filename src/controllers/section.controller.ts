@@ -213,6 +213,211 @@ export const createSectionController = asyncWrapper(async (req, res) => {
     
   });
 
+  export const addStudentsToSectionController = asyncWrapper(async (req, res) => {
+    const queryParamValidation = queryValidator
+      .queryParamIDValidator("Section ID not provided or invalid.")
+      .safeParse(req.params);
+
+    if (!queryParamValidation.success)
+      throw RouteError.BadRequest(
+        zodErrorFmt(queryParamValidation.error)[0].message,
+        zodErrorFmt(queryParamValidation.error)
+      );
+
+    const sectionId = queryParamValidation.data.id;
+
+    const bodyValidation = Array.isArray(req.body) && req.body.every(studentId => typeof studentId === "string")
+      ? req.body
+      : (() => {
+          throw RouteError.BadRequest("Request body must be an array of student IDs.");
+        })();
+
+    const existingSection = await db.section.findUnique({
+      where: { id: sectionId },
+    });
+
+    if (!existingSection)
+      throw RouteError.NotFound("Section not found with the provided ID.");
+
+    const validStudents = await db.student.findMany({
+      where: { id: { in: bodyValidation } },
+      select: { id: true },
+    });
+
+    const validStudentIds = validStudents.map(student => student.id);
+
+    const invalidStudents = bodyValidation.filter(id => !validStudentIds.includes(id));
+
+    if (invalidStudents.length > 0) {
+      throw RouteError.BadRequest(`Invalid student IDs: ${invalidStudents.join(", ")}`);
+    }
+
+    const alreadyAddedStudents = await db.section.findFirst({
+      where: { id: sectionId },
+      include: {
+        students: {
+          where: { id: { in: validStudentIds } },
+          select: { id: true },
+        },
+      },
+    });
+
+    const alreadyAddedStudentIds = alreadyAddedStudents?.students.map(student => student.id) || [];
+    const newStudentIds = validStudentIds.filter(id => !alreadyAddedStudentIds.includes(id));
+
+    if (newStudentIds.length > 0) {
+      await db.section.update({
+        where: { id: sectionId },
+        data: {
+          students: {
+            connect: newStudentIds.map(studentId => ({ id: studentId })),
+          },
+        },
+      });
+    }
+
+    return sendApiResponse({
+      res,
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Students added to section successfully",
+      result: {
+        addedStudents: newStudentIds,
+        alreadyAddedStudents: alreadyAddedStudentIds,
+      },
+    });
+  });
+
+  export const removeStudentsFromSectionController = asyncWrapper(async (req, res) => {
+    const queryParamValidation = queryValidator
+      .queryParamIDValidator("Section ID not provided or invalid.")
+      .safeParse(req.params);
+
+    if (!queryParamValidation.success)
+      throw RouteError.BadRequest(
+        zodErrorFmt(queryParamValidation.error)[0].message,
+        zodErrorFmt(queryParamValidation.error)
+      );
+
+    const sectionId = queryParamValidation.data.id;
+
+    const bodyValidation = Array.isArray(req.body) && req.body.every(studentId => typeof studentId === "string")
+      ? req.body
+      : (() => {
+          throw RouteError.BadRequest("Request body must be an array of student IDs.");
+        })();
+
+    const existingSection = await db.section.findUnique({
+      where: { id: sectionId },
+    });
+
+    if (!existingSection)
+      throw RouteError.NotFound("Section not found with the provided ID.");
+
+    const validStudents = await db.student.findMany({
+      where: { id: { in: bodyValidation } },
+      select: { id: true },
+    });
+
+    const validStudentIds = validStudents.map(student => student.id);
+
+    const invalidStudents = bodyValidation.filter(id => !validStudentIds.includes(id));
+
+    if (invalidStudents.length > 0) {
+      throw RouteError.BadRequest(`Invalid student IDs: ${invalidStudents.join(", ")}`);
+    }
+
+    const updatedSection = await db.section.update({
+      where: { id: sectionId },
+      data: {
+        students: {
+          disconnect: validStudentIds.map(studentId => ({ id: studentId })),
+        },
+      },
+      include: {
+        students: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return sendApiResponse({
+        res,
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Section Update successfully",
+        result: updatedSection,
+      });
+    })
+
+
+    export const updateSectionController = asyncWrapper(async (req, res) => {
+      const queryParamValidation = queryValidator
+        .queryParamIDValidator("Section ID not provided or invalid.")
+        .safeParse(req.params);
+
+      if (!queryParamValidation.success)
+        throw RouteError.BadRequest(
+          zodErrorFmt(queryParamValidation.error)[0].message,
+          zodErrorFmt(queryParamValidation.error)
+        );
+
+      const bodyValidation = CreateSectionSchema.pick({ name: true, homeRoom: true }).safeParse(req.body);
+
+      if (!bodyValidation.success)
+        throw RouteError.BadRequest(
+          zodErrorFmt(bodyValidation.error)[0].message,
+          zodErrorFmt(bodyValidation.error)
+        );
+
+      const existingSection = await db.section.findUnique({
+        where: { id: queryParamValidation.data.id },
+      });
+
+      if (!existingSection)
+        throw RouteError.NotFound("Section not found with the provided ID.");
+
+      if (bodyValidation.data.homeRoom) {
+        const teacherExists = await db.teacher.findFirst({
+          where: { id: bodyValidation.data.homeRoom },
+        });
+
+        if (!teacherExists) throw RouteError.BadRequest("Home Room ID doesn't exist.");
+      }
+
+      const updatedSection = await db.section.update({
+        where: { id: queryParamValidation.data.id },
+        data: {
+          name: bodyValidation.data.name,
+          teacherId: bodyValidation.data.homeRoom,
+        },
+        include: {
+          gradeLevel: true,
+          students: {
+            include: {
+              user: true,
+            },
+          },
+          homeRoom: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+
+      return sendApiResponse({
+        res,
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Section updated successfully",
+        result: updatedSection,
+      });
+    });
+
+
   export const getSectionByGradeLevelController = asyncWrapper(async (req, res) => {
     const queryParamValidation = queryValidator
       .queryParamIDValidator("Grade Level ID not provided or invalid.")

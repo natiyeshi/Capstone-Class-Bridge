@@ -12,3 +12,9 @@ export const CreateSectionSchema = z.object({
   }).optional().nullable(),
   students: z.array(z.string({ message: "Student id should be string!" })).optional().nullable(),
 });
+
+
+// multiple student add
+// remove student
+
+// update name and homeRoom
