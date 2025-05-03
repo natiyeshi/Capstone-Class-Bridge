@@ -10,7 +10,7 @@ router.post("/", updateResultsController);
 router.get("/:id", getResultByIdController);
 router.delete("/:id", deleteResultController);
 router.get("/student/:id", getStudentResultsController);
-router.get("/section/:id", getStudentsResultsController);
+// router.get("/subject/:id", getStudentsResultsController);
 
 
 

@@ -14,6 +14,7 @@ import resultRouter from "./result.routes";
 import messageRouter from "./message.routes";
 import sectionMessageRouter from "./sectionMessage.routes";
 import collectiveResultRouter from "./collectiveResult.routes";
+import rosterRouter from "./roster.routes";
 
 export default {
   authRoute,
@@ -31,5 +32,6 @@ export default {
   resultRouter,
   collectiveResultRouter,
   messageRouter,
-  sectionMessageRouter
+  sectionMessageRouter,
+  rosterRouter
 };

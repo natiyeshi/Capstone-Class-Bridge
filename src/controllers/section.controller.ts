@@ -457,6 +457,85 @@ export const createSectionController = asyncWrapper(async (req, res) => {
     });
   });
 
+export const assignTeacherToSectionController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Section ID not provided or invalid.")
+    .safeParse(req.params);
+  
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+
+  const { teacherId, subjectId } = req.body;
+
+  if (!teacherId || !subjectId)
+    throw RouteError.BadRequest("Teacher ID and Subject ID are required.");
+
+  // Check if teacher exists
+  const teacher = await db.teacher.findUnique({
+    where: { id: teacherId }
+  });
+
+  if (!teacher)
+    throw RouteError.NotFound("Teacher not found.");
+
+  // Check if section exists
+  const section = await db.section.findUnique({
+    where: { id: queryParamValidation.data.id }
+  });
+
+  if (!section)
+    throw RouteError.NotFound("Section not found.");
+
+  // Check if subject exists
+  const subject = await db.subject.findUnique({
+    where: { id: subjectId }
+  });
+
+  if (!subject)
+    throw RouteError.NotFound("Subject not found.");
+
+  // Check if assignment already exists
+  const existingAssignment = await db.teacherSectionSubject.findFirst({
+    where: {
+      teacherId,
+      sectionId: queryParamValidation.data.id,
+      subjectId
+    }
+  });
+
+  if (existingAssignment)
+    throw RouteError.BadRequest("Teacher is already assigned to this section and subject.");
+
+  // Create the assignment
+  const assignment = await db.teacherSectionSubject.create({
+    data: {
+      teacherId,
+      sectionId: queryParamValidation.data.id,
+      subjectId
+    },
+    include: {
+      teacher: {
+        include: {
+          user: true
+        }
+      },
+      section: true,
+      subject: true
+    }
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.CREATED,
+    success: true,
+    message: "Teacher assigned to section successfully",
+    result: assignment
+  });
+});
+
 
 
 // export const createSectionController = asyncWrapper(async (req, res) => {

@@ -163,3 +163,81 @@ export const createTeacherController = asyncWrapper(async (req, res) => {
         result: teacher,
       });
     });
+
+export const getRelatedUsersController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Teacher ID not provided or invalid.")
+    .safeParse(req.params);
+  
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+
+  // Find all sections and subjects for this teacher
+  const teacherSections = await db.teacherSectionSubject.findMany({
+    where: {
+      teacherId: queryParamValidation.data.id
+    },
+    include: {
+      section: {
+        include: {
+          students: {
+            include: {
+              parent: {
+                include: {
+                  user: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Get director information
+  const director = await db.director.findFirst({
+    include: {
+      user: true
+    }
+  });
+
+  interface RelatedUsers {
+    parents: Array<{
+      id: string;
+      user: any;
+    }>;
+    director: {
+      id: string;
+      user: any;
+    } | null;
+  }
+
+  // Extract unique parents
+  const relatedUsers = teacherSections.reduce<RelatedUsers>((acc, tss) => {
+    if (!tss.section) return acc;
+    
+    tss.section.students.forEach(student => {
+      // Add parent if not already in accumulator
+      if (student.parent && !acc.parents.some(p => p.id === student.parent.id)) {
+        acc.parents.push(student.parent);
+      }
+    });
+    return acc;
+  }, { parents: [], director: null });
+
+  // Add director information
+  if (director) {
+    relatedUsers.director = director;
+  }
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Related users retrieved successfully",
+    result: relatedUsers
+  });
+});

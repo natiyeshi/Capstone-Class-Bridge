@@ -115,3 +115,5 @@ export const seenMessageController = asyncWrapper(async (req, res) => {
       result : message,
   });
 });
+
+

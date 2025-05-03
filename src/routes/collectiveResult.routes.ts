@@ -1,13 +1,18 @@
 import { Router } from "express";
 import middleware from "../middleware";
-import { createCollectiveResultsController, getCollectiveResultByIdController, getCollectiveResultsController } from "../controllers/collectiveResult.controller"
+import { 
+  createCollectiveResultsController, 
+  getCollectiveResultByIdController, 
+  getCollectiveResultsController,
+  getCollectiveResultByStudentIdController 
+} from "../controllers/collectiveResult.controller"
 
 const router = Router();
 
 router.get("/", getCollectiveResultsController);
-router.post("/", createCollectiveResultsController);
+router.post("/:id", createCollectiveResultsController);
 router.get("/:id", getCollectiveResultByIdController);
-// router.delete("/:id", deleteCollectiveResultController);
+router.get("/student/:id", getCollectiveResultByStudentIdController);
 
 
 export default router;

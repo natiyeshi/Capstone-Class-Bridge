@@ -30,7 +30,7 @@ app.use("/api/v1/result", routes.resultRouter);
 app.use("/api/v1/collective-result", routes.collectiveResultRouter);
 app.use("/api/v1/message", routes.messageRouter);
 app.use("/api/v1/section-message", routes.sectionMessageRouter);
-
+app.use('/api/v1/roster', routes.rosterRouter);
 // Route error handling middleware
 app.use(middlewares.routeErrorHandlingMiddleware);
 

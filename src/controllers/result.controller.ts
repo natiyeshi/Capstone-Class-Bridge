@@ -13,6 +13,7 @@ export const getResultsController = asyncWrapper(async (req, res) => {
                 user: true,
             }
         },
+        
     }
   });
   return sendApiResponse({
