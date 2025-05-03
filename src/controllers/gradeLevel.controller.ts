@@ -8,7 +8,8 @@ import queryValidator from "../validators/query.validator";
 export const getGradeLevelController = asyncWrapper(async (req, res) => {
   const gradelevel = await db.gradeLevel.findMany({
     include : {
-      subjectList : true
+      subjectList : true,
+      Section : true
     }
   });
   return sendApiResponse({
