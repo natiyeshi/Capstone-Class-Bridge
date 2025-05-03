@@ -24,6 +24,67 @@ export const getResultsController = asyncWrapper(async (req, res) => {
   });
 });
 
+export const getStudentResultsController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+  .queryParamIDValidator("Student ID not provided or invalid.")
+  .safeParse(req.params);
+
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+  
+  const users = await db.result.findUnique({
+    where : { studentId : queryParamValidation.data.id },
+    include:{
+        student: {
+            include: {
+                user: true,
+            }
+        },
+    }
+  });
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Results retrived successfully",
+    result: users,
+  });
+});
+
+
+export const getStudentsResultsController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+  .queryParamIDValidator("Section ID not provided or invalid.")
+  .safeParse(req.params);
+
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+  
+  const users = await db.result.findMany({
+    where : { sectionId : queryParamValidation.data.id },
+    include:{
+        student: {
+            include: {
+                user: true,
+            }
+        },
+    }
+  });
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Results retrived successfully",
+    result: users,
+  });
+});
+
 
 const isCh = (a: any, b : any) => {
     return a === undefined || a === null ? b : a; 

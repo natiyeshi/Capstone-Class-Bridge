@@ -75,7 +75,7 @@ export const createCollectiveResultsController = asyncWrapper(async (req, res) =
         
           collectiveResult = await db.collectiveResult.create({
             data: {
-                studentId: bodyValidation.data.studentId,
+                studentId: queryParamValidation.data.id,
                 sectionId: bodyValidation.data.sectionId,
                 feedback: bodyValidation.data.feedback,
                 conduct: bodyValidation.data.conduct,
@@ -90,7 +90,7 @@ export const createCollectiveResultsController = asyncWrapper(async (req, res) =
               studentId : queryParamValidation.data.id,
             },
             data: {
-                studentId: bodyValidation.data.studentId,
+                studentId: queryParamValidation.data.id,
                 sectionId: bodyValidation.data.sectionId,
                 feedback: bodyValidation.data.feedback,
                 conduct: bodyValidation.data.conduct,
@@ -110,7 +110,7 @@ export const createCollectiveResultsController = asyncWrapper(async (req, res) =
 
 
   
-  export const getCollectiveResultByIdController = asyncWrapper(async (req, res) => {
+export const getCollectiveResultByIdController = asyncWrapper(async (req, res) => {
     const queryParamValidation = queryValidator
       .queryParamIDValidator("CollectiveResult ID not provided or invalid.")
       .safeParse(req.params);
@@ -141,7 +141,6 @@ export const createCollectiveResultsController = asyncWrapper(async (req, res) =
       result: collectiveresult,
     });
   });
-
 
   
 //   export const deleteCollectiveResultController = asyncWrapper(async (req, res) => {
