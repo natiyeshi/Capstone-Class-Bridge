@@ -19,13 +19,40 @@ export const getUsersController = asyncWrapper(async (req, res) => {
 export const getMe = asyncWrapper(async (req, res) => {
   const id = req.user?._id ?? null;
   if (!id) throw RouteError.BadRequest("User Not Found!");
-  const users = await db.user.findUnique({ where : { id }});
+  const existingUser = await db.user.findUnique({ where : { id }});
+  if (!existingUser) throw RouteError.BadRequest("Invalid email or password");
+  
+  if (existingUser.role === "UNKNOWN")
+    throw RouteError.BadRequest("Please wait while admin defines your role.");
+  
+  let detail = null;
+
+    if (existingUser.role === "TEACHER") {
+      const teacher = await db.teacher.findFirst({
+        where: { userId: existingUser.id },
+      });
+      if (!teacher) throw RouteError.BadRequest("You are not a teacher.");
+      detail = teacher;
+    } else if (existingUser.role === "PARENT") {
+      const parent = await db.parent.findFirst({
+        where: { userId: existingUser.id },
+      });
+      if (!parent) throw RouteError.BadRequest("You are not a parent.");
+      detail = parent;
+    } else if (existingUser.role === "DIRECTOR") {
+      const director = await db.director.findFirst({
+        where: { userId: existingUser.id },
+      });
+      if (!director) throw RouteError.BadRequest("You are not an director.");
+      detail = director;
+    }
+  
   return sendApiResponse({
     res,
     statusCode: StatusCodes.OK,
     success: true,
     message: "Users retrived successfully",
-    result: users,
+    result: { user: existingUser, roleId : detail?.id },
   });
 });
 

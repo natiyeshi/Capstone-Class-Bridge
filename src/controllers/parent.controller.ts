@@ -229,20 +229,22 @@ export const getRelatedUsersController = asyncWrapper(async (req, res) => {
       students: {
         include: {
           user: true,
+          section : true
         },
+        
       },
     },
   });
 
   if (!parent) throw RouteError.BadRequest("Parent not found.");
 
-  const children = parent.students.map(student => student.id);
-
+  const sections = parent.students.map(student => student.sectionId).filter(s => s !== null) as string[];
+  console.log("Children", sections);
   // Find all sections and subjects for this teacher
   const parentWithStudents = await db.teacherSectionSubject.findMany({
     where: {
-      studentId: {
-        in: children
+      sectionId: {
+          in : sections
       }
     },
     include: {
@@ -261,6 +263,8 @@ export const getRelatedUsersController = asyncWrapper(async (req, res) => {
       }
     }
   });
+  console.log("parentWithStudents", parentWithStudents);
+
 
   // Get director information
   const director = await db.director.findFirst({

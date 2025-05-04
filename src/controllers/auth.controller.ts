@@ -69,7 +69,26 @@ export const signInController = asyncWrapper(async (req, res) => {
 
   if (existingUser.role === "UNKNOWN")
     throw RouteError.BadRequest("Please wait while admin defines your role.");
-
+  let detail = null;
+  if (existingUser.role === "TEACHER") {
+    const teacher = await db.teacher.findFirst({
+      where: { userId: existingUser.id },
+    });
+    if (!teacher) throw RouteError.BadRequest("You are not a teacher.");
+    detail = teacher;
+  } else if (existingUser.role === "PARENT") {
+    const parent = await db.parent.findFirst({
+      where: { userId: existingUser.id },
+    });
+    if (!parent) throw RouteError.BadRequest("You are not a parent.");
+    detail = parent;
+  } else if (existingUser.role === "DIRECTOR") {
+    const director = await db.director.findFirst({
+      where: { userId: existingUser.id },
+    });
+    if (!director) throw RouteError.BadRequest("You are not an director.");
+    detail = director;
+  }
 
   const token = jwt.signToken({
     userId: existingUser.id,
@@ -89,7 +108,7 @@ export const signInController = asyncWrapper(async (req, res) => {
     statusCode: 200,
     success: true,
     message: "User signed up successfully",
-    result: { user: userDto, token },
+    result: { user: userDto, token, roleId : detail?.id },
   });
 });
 

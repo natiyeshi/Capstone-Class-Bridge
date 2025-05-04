@@ -32,7 +32,7 @@ model Teacher {
   id                    String                  @id @unique @default(cuid())
   isActivated           Boolean                 @default(false)
   user                  User?                   @relation(fields: [userId], references: [id])
-  userId                String?
+  userId                String?                 
   Section               Section[]
   TeacherSectionSubject TeacherSectionSubject[]
   Result                Result[]
