@@ -208,3 +208,110 @@ export const addStudentToParentController = asyncWrapper(async (req, res) => {
        result: parent,
      });
    });
+
+
+export const getRelatedUsersController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Parent ID not provided or invalid.")
+    .safeParse(req.params);
+  
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+
+  // Fetch parent using the queryParamValidation.data.id
+  const parent = await db.parent.findUnique({
+    where: { id: queryParamValidation.data.id },
+    include: {
+      user: true,
+      students: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  });
+
+  if (!parent) throw RouteError.BadRequest("Parent not found.");
+
+  const children = parent.students.map(student => student.id);
+
+  // Find all sections and subjects for this teacher
+  const parentWithStudents = await db.teacherSectionSubject.findMany({
+    where: {
+      studentId: {
+        in: children
+      }
+    },
+    include: {
+      section: {
+        include: {
+          students: {
+            include: {
+              parent: {
+                include: {
+                  user: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Get director information
+  const director = await db.director.findFirst({
+    include: {
+      user: true
+    }
+  });
+
+  
+  interface RelatedUsers {
+    teachers: Array<{
+      id: string;
+      user: any;
+    }>;
+    director: {
+      id: string;
+      user: any;
+    } | null;
+  }
+
+  // Extract unique teachers
+  // const relatedUsers = parentWithStudents.students.reduce<RelatedUsers>(
+  //   (acc, student) => {
+  //     if (!student.section) return acc;
+
+  //     student.section.teacherSectionSubjects.forEach((tss) => {
+  //       if (
+  //         tss.teacher &&
+  //         !acc.teachers.some((teacher) => teacher.id === tss.teacher.id)
+  //       ) {
+  //         acc.teachers.push(tss.teacher);
+  //       }
+  //     });
+
+  //     return acc;
+  //   },
+  //   { teachers: [], director: null }
+  // );
+
+
+  // Add director information
+  if (director) {
+    // relatedUsers.director = director;
+  }
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Related users retrieved successfully",
+    result: parentWithStudents
+  });
+});
+

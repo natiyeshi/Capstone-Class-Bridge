@@ -109,3 +109,58 @@ export const createAnnouncementController = asyncWrapper(async (req, res) => {
     result: announcement,
   });
 });
+
+
+export const updateAnnouncementController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Announcement ID not provided or invalid.")
+    .safeParse(req.params);
+
+  if (!queryParamValidation.success) {
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+  }
+
+  const bodyValidation = createAnnouncementSchema.partial().safeParse(req.body);
+
+  if (!bodyValidation.success) {
+    throw RouteError.BadRequest(
+      zodErrorFmt(bodyValidation.error)[0].message,
+      zodErrorFmt(bodyValidation.error)
+    );
+  }
+
+  const { topic, description, image, directorId } = bodyValidation.data;
+
+  if (directorId) {
+    const userExists = await db.director.findUnique({
+      where: { id: directorId },
+    });
+
+    if (!userExists) {
+      throw RouteError.BadRequest("director does not exist");
+    }
+  }
+
+  const announcement = await db.announcement.update({
+    where: {
+      id: queryParamValidation.data.id,
+    },
+    data: {
+      topic,
+      description,
+      image,
+      directorId,
+    },
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Announcement updated successfully",
+    result: announcement,
+  });
+});

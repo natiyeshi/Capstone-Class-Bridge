@@ -114,7 +114,6 @@ export const updateResultsController = asyncWrapper(async (req, res) => {
         });
         
         if (!existingResult) {
-            console.log("this works")
             const result = await db.result.create({
                 data: {
                     test1: bodyValidation.data.test1,
@@ -129,8 +128,6 @@ export const updateResultsController = asyncWrapper(async (req, res) => {
                     subjectId: bodyValidation.data.subjectId,
                 },
             });
-            console.log("this also works")
-
 
             return sendApiResponse({
                 res,
