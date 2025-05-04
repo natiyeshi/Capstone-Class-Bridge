@@ -8,7 +8,8 @@ import queryValidator from "../validators/query.validator";
 export const getStudentsController = asyncWrapper(async (req, res) => {
   const users = await db.student.findMany({
     include:{
-        user: true
+        user: true,
+        section: true,
     }
   });
   return sendApiResponse({
@@ -29,7 +30,9 @@ export const getStudentByIdController = asyncWrapper(async (req, res) => {
   const student = await db.student.findUnique({
     where : { id: queryParamValidation.data!.id },
     include:{
-        user: true
+        user: true,
+        section: true,
+
     }
   });
   return sendApiResponse({

@@ -128,11 +128,13 @@ model Result {
   section            Section?          @relation(fields: [sectionId], references: [id])
   subject            Subject?          @relation(fields: [subjectId], references: [id])
   teacherId          String?
-  studentId          String?           @unique
+  studentId          String?
   sectionId          String?
   subjectId          String?
   CollectiveResult   CollectiveResult? @relation(fields: [collectiveResultId], references: [id])
   collectiveResultId String?
+
+  @@unique([studentId, subjectId])
 }
 
 model Roaster {

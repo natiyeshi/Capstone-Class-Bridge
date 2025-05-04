@@ -13,6 +13,9 @@ export const getResultsController = asyncWrapper(async (req, res) => {
                 user: true,
             }
         },
+        subject: true,
+        section:true
+
         
     }
   });
@@ -36,7 +39,7 @@ export const getStudentResultsController = asyncWrapper(async (req, res) => {
       zodErrorFmt(queryParamValidation.error)
     );
   
-  const users = await db.result.findUnique({
+  const users = await db.result.findMany({
     where : { studentId : queryParamValidation.data.id },
     include:{
         student: {
@@ -44,6 +47,8 @@ export const getStudentResultsController = asyncWrapper(async (req, res) => {
                 user: true,
             }
         },
+        subject: true,
+        section:true
     }
   });
   return sendApiResponse({
@@ -75,6 +80,8 @@ export const getStudentsResultsController = asyncWrapper(async (req, res) => {
                 user: true,
             }
         },
+        subject: true,
+        section:true
     }
   });
   return sendApiResponse({
@@ -103,10 +110,11 @@ export const updateResultsController = asyncWrapper(async (req, res) => {
             );
         
         const existingResult = await db.result.findFirst({
-            where: { studentId : bodyValidation.data.studentId },
+            where: { studentId : bodyValidation.data.studentId, subjectId : bodyValidation.data.subjectId },
         });
         
         if (!existingResult) {
+            console.log("this works")
             const result = await db.result.create({
                 data: {
                     test1: bodyValidation.data.test1,
@@ -121,6 +129,8 @@ export const updateResultsController = asyncWrapper(async (req, res) => {
                     subjectId: bodyValidation.data.subjectId,
                 },
             });
+            console.log("this also works")
+
 
             return sendApiResponse({
                 res,
@@ -132,19 +142,19 @@ export const updateResultsController = asyncWrapper(async (req, res) => {
             
         }
 
-        const user = await db.result.findUnique({
-            where: { studentId: bodyValidation.data.studentId },
+        const r = await db.result.findUnique({
+            where: { id: existingResult.id },
           });
         
         const result = await db.result.update({
-            where: { studentId: bodyValidation.data.studentId },
+            where: { id: existingResult.id },
             data: {
-                test1: isCh(bodyValidation.data.test1,user?.test1),
-                test2: isCh(bodyValidation.data.test2,user?.test2),
-                mid:  isCh(bodyValidation.data.mid,user?.mid),
-                final: isCh(bodyValidation.data.final,user?.final),
-                assignment: isCh(bodyValidation.data.assignment,user?.assignment),
-                quiz: isCh(bodyValidation.data.quiz,user?.quiz),
+                test1: isCh(bodyValidation.data.test1,r?.test1),
+                test2: isCh(bodyValidation.data.test2,r?.test2),
+                mid:  isCh(bodyValidation.data.mid,r?.mid),
+                final: isCh(bodyValidation.data.final,r?.final),
+                assignment: isCh(bodyValidation.data.assignment,r?.assignment),
+                quiz: isCh(bodyValidation.data.quiz,r?.quiz),
             },
         });
         

@@ -168,7 +168,7 @@ export const getCollectiveResultByStudentIdController = asyncWrapper(async (req,
       zodErrorFmt(queryParamValidation.error)
     );
   
-  const collectiveResult = await db.collectiveResult.findFirst({
+  const collectiveResult = await db.collectiveResult.findUnique({
     where: {
       studentId: queryParamValidation.data.id,
     },
