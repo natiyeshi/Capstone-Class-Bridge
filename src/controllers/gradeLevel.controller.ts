@@ -38,7 +38,8 @@ export const getGradeLevelByIdController = asyncWrapper(async (req, res) => {
       id: queryParamValidation.data.id,
     },
     include : {
-      subjectList : true
+      subjectList : true,
+      Section : true
     }
   });
   return sendApiResponse({
