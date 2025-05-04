@@ -239,7 +239,6 @@ export const getRelatedUsersController = asyncWrapper(async (req, res) => {
   if (!parent) throw RouteError.BadRequest("Parent not found.");
 
   const sections = parent.students.map(student => student.sectionId).filter(s => s !== null) as string[];
-  console.log("Children", sections);
   // Find all sections and subjects for this teacher
   const parentWithStudents = await db.teacherSectionSubject.findMany({
     where: {
@@ -248,74 +247,39 @@ export const getRelatedUsersController = asyncWrapper(async (req, res) => {
       }
     },
     include: {
-      section: {
-        include: {
-          students: {
-            include: {
-              parent: {
-                include: {
-                  user: true
-                }
-              }
-            }
-          }
-        }
+     teacher : {
+      include : {
+        user : true
       }
+     },
     }
   });
-  console.log("parentWithStudents", parentWithStudents);
+
+  const teachers = parentWithStudents.map(tss => tss.teacher);
 
 
   // Get director information
-  const director = await db.director.findFirst({
+  const director = await db.director.findMany({
+    where:{
+      userId : {
+        not: null,
+      }
+    },
     include: {
       user: true
     }
   });
 
-  
-  interface RelatedUsers {
-    teachers: Array<{
-      id: string;
-      user: any;
-    }>;
-    director: {
-      id: string;
-      user: any;
-    } | null;
-  }
-
-  // Extract unique teachers
-  // const relatedUsers = parentWithStudents.students.reduce<RelatedUsers>(
-  //   (acc, student) => {
-  //     if (!student.section) return acc;
-
-  //     student.section.teacherSectionSubjects.forEach((tss) => {
-  //       if (
-  //         tss.teacher &&
-  //         !acc.teachers.some((teacher) => teacher.id === tss.teacher.id)
-  //       ) {
-  //         acc.teachers.push(tss.teacher);
-  //       }
-  //     });
-
-  //     return acc;
-  //   },
-  //   { teachers: [], director: null }
-  // );
-
-
-  // Add director information
-  if (director) {
-    // relatedUsers.director = director;
-  }
 
   return sendApiResponse({
     res,
     statusCode: StatusCodes.OK,
     success: true,
     message: "Related users retrieved successfully",
-    result: parentWithStudents
+    result: {
+      directors : director,
+      teachers : teachers,
+    }
   });
 });
 

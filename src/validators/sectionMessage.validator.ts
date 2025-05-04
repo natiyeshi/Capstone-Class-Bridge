@@ -14,6 +14,7 @@ export const SectionMessageSchema = z.object({
         required_error: "Sender ID is required",
     }),
 
+    images: z.array(z.string()).optional().default([]),
 
 });
 

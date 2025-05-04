@@ -198,6 +198,7 @@ model Message {
   receiverId String
   createdAt  DateTime @default(now())
   seen       Boolean  @default(false)
+  images     String[] @default([])
   sender     User     @relation(name: "SentMessages", fields: [senderId], references: [id])
   receiver   User     @relation(name: "ReceivedMessages", fields: [receiverId], references: [id])
 }
@@ -207,10 +208,10 @@ model SectionMessage {
   content   String?
   createdAt DateTime?
   section   Section?  @relation(fields: [sectionId], references: [id])
-  senderId  User?     @relation(fields: [userId], references: [id])
-  image     String?
+  sender    User?     @relation(fields: [senderId], references: [id])
+  images    String[]  @default([])
   sectionId String?
-  userId    String?
+  senderId  String?
 }
 
 model GradeLevelMessage {

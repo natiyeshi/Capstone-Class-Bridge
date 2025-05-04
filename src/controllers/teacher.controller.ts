@@ -198,7 +198,12 @@ export const getRelatedUsersController = asyncWrapper(async (req, res) => {
   });
 
   // Get director information
-  const director = await db.director.findFirst({
+  const director = await db.director.findMany({
+    where:{
+      userId : {
+        not: null,
+      }
+    },
     include: {
       user: true
     }
@@ -212,7 +217,7 @@ export const getRelatedUsersController = asyncWrapper(async (req, res) => {
     director: {
       id: string;
       user: any;
-    } | null;
+    }[] | null;
   }
 
   // Extract unique parents

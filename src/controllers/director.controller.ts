@@ -70,3 +70,61 @@ export const createDirectorController = asyncWrapper(async (req, res) => {
       result: director,
     });
   });
+
+export const getRelatedUsersController = asyncWrapper(async (req, res) => {
+  const users = await db.user.findMany({
+    where : {
+      role : {
+        notIn : ["UNKNOWN","STUDENT"]
+      }
+    },
+    include: {
+      Director: true,
+      Parent: true,
+      Teacher: true,
+      Student: true
+    }
+  });
+
+  const usersWithRoles = users.map(user => {
+    const roleData: {
+      id: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      role: string | null;
+      roleSpecificId: string | null;
+    } = {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      roleSpecificId: null
+    };
+
+    switch (user.role) {
+      case 'DIRECTOR':
+        roleData.roleSpecificId = user.Director?.[0]?.id ?? null;
+        break;
+      case 'PARENT':
+        roleData.roleSpecificId = user.Parent?.[0]?.id ?? null;
+        break;
+      case 'TEACHER':
+        roleData.roleSpecificId = user.Teacher?.[0]?.id ?? null;
+        break;
+    }
+
+    return roleData;
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Users with role-specific information retrieved successfully",
+    result: usersWithRoles,
+  });
+});
+
+

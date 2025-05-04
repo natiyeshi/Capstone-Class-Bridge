@@ -14,6 +14,8 @@ export const MessageSchema = z.object({
     required_error: "Receiver ID is required",
   }),
 
+  images: z.array(z.string()).optional().default([]),
+
 });
 
 
