@@ -302,7 +302,11 @@ export const getParentSectionsController = asyncWrapper(async (req, res) => {
         include: {
             students: {
                 include: {
-                    section: true
+                    section: {
+                      include: {
+                        gradeLevel: true,
+                      }
+                    }
                 }
             }
         }
@@ -318,9 +322,6 @@ export const getParentSectionsController = asyncWrapper(async (req, res) => {
     const sections = parent.students
         .map((student: Student & { section: Section | null }) => student.section)
         .filter((section): section is Section => section !== null)
-        .filter((section: Section, index: number, self: Section[]) => 
-            index === self.findIndex((s: Section) => s.id === section.id)
-        );
 
     if (!sections.length)
         throw RouteError.NotFound("No sections found for parent's students.");

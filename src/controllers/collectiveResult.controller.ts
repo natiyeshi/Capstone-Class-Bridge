@@ -386,7 +386,13 @@ export const updateCollectiveResultFeedbackController = asyncWrapper(async (req,
     });
 
     if (!collectiveResult)
-        throw RouteError.NotFound("Collective result not found.");
+      return sendApiResponse({
+        res,
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Collective result feedback updated successfully",
+        result: null,
+    });
 
     const updatedResult = await db.collectiveResult.update({
         where: {
