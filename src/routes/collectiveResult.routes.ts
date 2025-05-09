@@ -18,6 +18,6 @@ router.get("/:id", getCollectiveResultByIdController);
 router.get("/student/:id", getCollectiveResultByStudentIdController);
 router.post("/section/:id", createSectionCollectiveResultsController);
 router.get("/section/:id", getCollectiveResultsBySectionController);
-router.patch("/feedback/:id", updateCollectiveResultFeedbackController);
+router.put("/:id", updateCollectiveResultFeedbackController);
 
 export default router;
