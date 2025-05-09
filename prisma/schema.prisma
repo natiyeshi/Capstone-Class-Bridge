@@ -13,9 +13,9 @@ model User {
   password         String
   firstName        String
   lastName         String
-  profile      String?
+  profile          String?
   phoneNumber      String?
-  gender          String?
+  gender           String?
   dateOfBirth      DateTime?
   role             USER_ROLE?       @default(UNKNOWN)
   // Relations
@@ -32,12 +32,12 @@ model Teacher {
   id                    String                  @id @unique @default(cuid())
   isActivated           Boolean                 @default(false)
   user                  User?                   @relation(fields: [userId], references: [id])
-  userId                String?                 
+  userId                String?
   Section               Section[]
   TeacherSectionSubject TeacherSectionSubject[]
   Result                Result[]
 }
-collectiveResult
+
 model Student {
   id        String   @id @unique @default(cuid())
   user      User?    @relation(fields: [userId], references: [id])
@@ -55,11 +55,11 @@ model Student {
 }
 
 model Parent {
-  id          String  @id @unique @default(cuid())
-  isActivated Boolean @default(false)
-  user     User?     @relation(fields: [userId], references: [id])
-  userId   String?
-  students Student[] // One-to-many relation to students
+  id          String    @id @unique @default(cuid())
+  isActivated Boolean   @default(false)
+  user        User?     @relation(fields: [userId], references: [id])
+  userId      String?
+  students    Student[] // One-to-many relation to students
 }
 
 model Director {
