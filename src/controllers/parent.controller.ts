@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { asyncWrapper, RouteError, sendApiResponse } from "../utils";
 import { db, passwordCrypt, zodErrorFmt } from "../libs";
-import { Parent } from "@prisma/client";
+import { Parent, Section, Student } from "@prisma/client";
 import { authValidator } from "../validators";
 import queryValidator from "../validators/query.validator";
 
@@ -281,5 +281,56 @@ export const getRelatedUsersController = asyncWrapper(async (req, res) => {
       teachers : teachers,
     }
   });
+});
+
+export const getParentSectionsController = asyncWrapper(async (req, res) => {
+    const queryParamValidation = queryValidator
+        .queryParamIDValidator("Parent ID not provided or invalid.")
+        .safeParse(req.params);
+
+    if (!queryParamValidation.success)
+        throw RouteError.BadRequest(
+            zodErrorFmt(queryParamValidation.error)[0].message,
+            zodErrorFmt(queryParamValidation.error)
+        );
+
+    // Get parent with their students and their sections
+    const parent = await db.parent.findUnique({
+        where: {
+            id: queryParamValidation.data.id
+        },
+        include: {
+            students: {
+                include: {
+                    section: true
+                }
+            }
+        }
+    });
+
+    if (!parent)
+        throw RouteError.NotFound("Parent not found.");
+
+    if (!parent.students.length)
+        throw RouteError.NotFound("No students found for this parent.");
+
+    // Extract unique sections from students
+    const sections = parent.students
+        .map((student: Student & { section: Section | null }) => student.section)
+        .filter((section): section is Section => section !== null)
+        .filter((section: Section, index: number, self: Section[]) => 
+            index === self.findIndex((s: Section) => s.id === section.id)
+        );
+
+    if (!sections.length)
+        throw RouteError.NotFound("No sections found for parent's students.");
+
+    return sendApiResponse({
+        res,
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Parent's students sections retrieved successfully",
+        result: sections
+    });
 });
 

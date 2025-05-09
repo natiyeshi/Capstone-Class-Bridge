@@ -9,4 +9,5 @@ router.get("/", getSectionMessageController);
 router.delete("/:id", deleteSectionMessageController);
 router.put("/:id", updateSectionMessageController);
 
+
 export default router;

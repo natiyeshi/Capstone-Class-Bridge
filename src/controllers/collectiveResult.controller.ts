@@ -193,6 +193,7 @@ export const getCollectiveResultByStudentIdController = asyncWrapper(async (req,
       studentId: queryParamValidation.data.id,
     },
     include: {
+      result : true,
       student: {
         include: {
           user: true,
@@ -353,5 +354,62 @@ export const getCollectiveResultsBySectionController = asyncWrapper(async (req, 
         success: true,
         message: "Collective results retrieved successfully",
         result: collectiveResults
+    });
+});
+
+export const updateCollectiveResultFeedbackController = asyncWrapper(async (req, res) => {
+    const queryParamValidation = queryValidator
+        .queryParamIDValidator("CollectiveResult ID not provided or invalid.")
+        .safeParse(req.params);
+
+    if (!queryParamValidation.success)
+        throw RouteError.BadRequest(
+            zodErrorFmt(queryParamValidation.error)[0].message,
+            zodErrorFmt(queryParamValidation.error)
+        );
+
+    const bodyValidation = CollectiveResultSchema.pick({
+        feedback: true,
+        conduct: true
+    }).safeParse(req.body);
+
+    if (!bodyValidation.success)
+        throw RouteError.BadRequest(
+            zodErrorFmt(bodyValidation.error)[0].message,
+            zodErrorFmt(bodyValidation.error)
+        );
+
+    const collectiveResult = await db.collectiveResult.findUnique({
+        where: {
+            id: queryParamValidation.data.id
+        }
+    });
+
+    if (!collectiveResult)
+        throw RouteError.NotFound("Collective result not found.");
+
+    const updatedResult = await db.collectiveResult.update({
+        where: {
+            id: queryParamValidation.data.id
+        },
+        data: {
+            feedback: bodyValidation.data.feedback,
+            conduct: bodyValidation.data.conduct
+        },
+        include: {
+            student: {
+                include: {
+                    user: true
+                }
+            }
+        }
+    });
+
+    return sendApiResponse({
+        res,
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Collective result feedback updated successfully",
+        result: updatedResult
     });
 });
