@@ -37,7 +37,7 @@ model Teacher {
   TeacherSectionSubject TeacherSectionSubject[]
   Result                Result[]
 }
-
+collectiveResult
 model Student {
   id        String   @id @unique @default(cuid())
   user      User?    @relation(fields: [userId], references: [id])
