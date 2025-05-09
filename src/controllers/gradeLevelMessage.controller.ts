@@ -19,12 +19,18 @@ export const createGradeLevelMessageController = asyncWrapper(async (req, res) =
 
   if (!gradeLevel) throw RouteError.NotFound("Grade level not found.");
 
+  const sender = await db.user.findUnique({
+    where: { id: bodyValidation.data.senderId }
+  });
+
+  if (!sender) throw RouteError.NotFound("Sender not found.");
+
   const message = await db.gradeLevelMessage.create({
     data: {
       content: bodyValidation.data.content,
       image: bodyValidation.data.image,
       gradeLevelId: bodyValidation.data.gradeLevelId,
-      senderId: req.user?._id,
+      senderId: bodyValidation.data.senderId,
       createdAt: new Date(),
     },
     include: {
@@ -100,7 +106,7 @@ export const updateGradeLevelMessageController = asyncWrapper(async (req, res) =
 
   if (!message) throw RouteError.NotFound("Message not found.");
 
-  if (message.senderId !== req.user?._id)
+  if (message.senderId !== bodyValidation.data.senderId)
     throw RouteError.Forbidden("You are not authorized to update this message.");
 
   const updatedMessage = await db.gradeLevelMessage.update({
@@ -135,13 +141,21 @@ export const deleteGradeLevelMessageController = asyncWrapper(async (req, res) =
       zodErrorFmt(queryParamValidation.error)
     );
 
+  const bodyValidation = gradeLevelMessageValidator.gradeLevelMessageUpdateSchema.safeParse(req.body);
+
+  if (!bodyValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(bodyValidation.error)[0].message,
+      zodErrorFmt(bodyValidation.error)
+    );
+
   const message = await db.gradeLevelMessage.findUnique({
     where: { id: queryParamValidation.data.id },
   });
 
   if (!message) throw RouteError.NotFound("Message not found.");
 
-  if (message.senderId !== req.user?._id)
+  if (message.senderId !== bodyValidation.data.senderId)
     throw RouteError.Forbidden("You are not authorized to delete this message.");
 
   await db.gradeLevelMessage.delete({
@@ -153,7 +167,7 @@ export const deleteGradeLevelMessageController = asyncWrapper(async (req, res) =
     statusCode: StatusCodes.OK,
     success: true,
     message: "Grade level message deleted successfully",
-    result : null,
+    result: null,
   });
 });
 

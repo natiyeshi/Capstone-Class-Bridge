@@ -132,3 +132,110 @@ export const createAttendanceController = asyncWrapper(async (req, res) => {
     result: attendance,
   });
 });
+
+export const getAttendanceByDateController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Section ID not provided or invalid.")
+    .safeParse(req.params);
+
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+
+  const { date } = req.query;
+
+  if (!date || typeof date !== 'string') {
+    throw RouteError.BadRequest("Date parameter is required and must be a string");
+  }
+
+  // Parse the date string to a Date object
+  const attendanceDate = new Date(date);
+  
+  // Validate if the date is valid
+  if (isNaN(attendanceDate.getTime())) {
+    throw RouteError.BadRequest("Invalid date format");
+  }
+
+  // Set the time to start of day
+  attendanceDate.setHours(0, 0, 0, 0);
+  
+  // Set the time to end of day for the next day
+  const nextDay = new Date(attendanceDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+
+  const attendance = await db.attendance.findMany({
+    where: {
+      sectionId: queryParamValidation.data.id,
+      date: {
+        gte: attendanceDate,
+        lt: nextDay,
+      },
+    },
+    include: {
+      student: {
+        include: {
+          user: true,
+        },
+      },
+      section: {
+        include: {
+          gradeLevel: true,
+        },
+      },
+    },
+    orderBy: {
+      date: 'desc',
+    },
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Attendance records retrieved successfully",
+    result: attendance,
+  });
+});
+
+export const getStudentAttendanceController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Student ID not provided or invalid.")
+    .safeParse(req.params);
+
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+
+  const attendance = await db.attendance.findMany({
+    where: {
+      studentId: queryParamValidation.data.id,
+    },
+    include: {
+      student: {
+        include: {
+          user: true,
+        },
+      },
+      section: {
+        include: {
+          gradeLevel: true,
+        },
+      },
+    },
+    orderBy: {
+      date: 'desc',
+    },
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Student attendance records retrieved successfully",
+    result: attendance,
+  });
+});
