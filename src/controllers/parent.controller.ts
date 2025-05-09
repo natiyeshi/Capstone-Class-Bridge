@@ -335,3 +335,44 @@ export const getParentSectionsController = asyncWrapper(async (req, res) => {
     });
 });
 
+export const getParentGradeLevelsController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Parent ID not provided or invalid.")
+    .safeParse(req.params);
+
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+
+  // Find all students associated with this parent
+  const students = await db.student.findMany({
+    where: {
+      parentId: queryParamValidation.data.id,
+    },
+    include: {
+      section: {
+        include: {
+          gradeLevel: true,
+        },
+      },
+    },
+  });
+
+  // Extract unique grade levels, filtering out any null sections or grade levels
+  const gradeLevels = [...new Set(
+    students
+      .filter(student => student.section?.gradeLevel)
+      .map(student => student.section!.gradeLevel)
+  )];
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Parent's grade levels retrieved successfully",
+    result: gradeLevels,
+  });
+});
+

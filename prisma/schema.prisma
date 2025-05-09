@@ -8,24 +8,25 @@ datasource db {
 }
 
 model User {
-  id               String           @id @unique @default(cuid())
-  email            String           @unique
-  password         String
-  firstName        String
-  lastName         String
-  profile          String?
-  phoneNumber      String?
-  gender           String?
-  dateOfBirth      DateTime?
-  role             USER_ROLE?       @default(UNKNOWN)
+  id                String              @id @unique @default(cuid())
+  email             String              @unique
+  password          String
+  firstName         String
+  lastName          String
+  profile           String?
+  phoneNumber       String?
+  gender            String?
+  dateOfBirth       DateTime?
+  role              USER_ROLE?          @default(UNKNOWN)
   // Relations
-  Teacher          Teacher[]
-  Student          Student[]
-  Parent           Parent[]
-  Director         Director[]
-  messagesSent     Message[]        @relation(name: "SentMessages")
-  messagesReceived Message[]        @relation(name: "ReceivedMessages")
-  SectionMessage   SectionMessage[]
+  Teacher           Teacher[]
+  Student           Student[]
+  Parent            Parent[]
+  Director          Director[]
+  messagesSent      Message[]           @relation(name: "SentMessages")
+  messagesReceived  Message[]           @relation(name: "ReceivedMessages")
+  SectionMessage    SectionMessage[]
+  GradeLevelMessage GradeLevelMessage[]
 }
 
 model Teacher {
@@ -221,6 +222,8 @@ model GradeLevelMessage {
   createdAt    DateTime?
   gradeLevel   GradeLevel? @relation(fields: [gradeLevelId], references: [id])
   gradeLevelId String?
+  sender       User?       @relation(fields: [senderId], references: [id])
+  senderId     String?
 }
 
 enum Conduct {

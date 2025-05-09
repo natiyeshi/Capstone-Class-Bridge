@@ -8,7 +8,8 @@ import {
     getParentByIdController,
     getParentsController,
     activateParentController,
-    getParentSectionsController
+    getParentSectionsController,
+    getParentGradeLevelsController
 } from "../controllers/parent.controller"
 import Auth from "../middleware/auth";
 
@@ -22,5 +23,7 @@ router.delete("/:id", deleteParentController);
 router.post("/activate", Auth.authenticationMiddleWare, activateParentController);
 router.get("/:id/related-users", getRelatedUsersController);
 router.get("/:id/sections", getParentSectionsController);
+router.get("/:id/grade-levels", getParentGradeLevelsController);
+
 
 export default router;
