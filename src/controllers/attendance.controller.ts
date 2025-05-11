@@ -239,3 +239,87 @@ export const getStudentAttendanceController = asyncWrapper(async (req, res) => {
     result: attendance,
   });
 });
+
+// Updated controller to get today's attendance (by sectionId) for every student (with an extra attendance attribute (filled or null))
+export const getTodayAttendanceController = asyncWrapper(async (req, res) => {
+    const queryParamValidation = queryValidator
+        .queryParamIDValidator("Section ID not provided or invalid.")
+        .safeParse(req.params);
+
+    if (!queryParamValidation.success)
+        throw RouteError.BadRequest(
+            zodErrorFmt(queryParamValidation.error)[0].message,
+            zodErrorFmt(queryParamValidation.error)
+        );
+
+    const sectionId = queryParamValidation.data.id;
+
+    // Compute today's date (midnight) and now (for a range query)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+
+    // 1. Fetch all students (via a join on section) for the given section (using sectionId)
+    const students = await db.student.findMany({
+        where: { sectionId },
+        include: { user: true } // (or any other student details you want)
+    });
+
+    // 2. (Simulate a "left join" by querying attendance separately and merging the results.)
+    // Query attendance (using a date range) for today (for every student in the section) and (if filled) include the status (or null if not filled)
+    const attendances = await db.attendance.findMany({
+        where: {
+            sectionId,
+            date: { gte: today, lte: now }
+        },
+        include: { student: { include: { user: true } } } // (or any other student details you want)
+    });
+
+    // 3. Merge (or "left join") the attendances (so that every student (from students) has an extra "attendance" attribute (filled or null) for today's attendance.)
+    const studentsWithAttendance = students.map(student => {
+        const attendanceRecord = attendances.find(a => a.studentId === student.id);
+        return { ...student, attendance: attendanceRecord || null };
+    });
+
+    return sendApiResponse({
+        res,
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Today's attendance (by section) retrieved successfully (with an extra attendance attribute (filled or null) for every student).",
+        result: studentsWithAttendance
+    });
+});
+
+// New controller to get attendance history (by student id) (ordered by date descending)
+export const getStudentAttendanceHistoryController = asyncWrapper(async (req, res) => {
+    const queryParamValidation = queryValidator
+        .queryParamIDValidator("Student ID not provided or invalid.")
+        .safeParse(req.params);
+
+    if (!queryParamValidation.success)
+        throw RouteError.BadRequest(
+            zodErrorFmt(queryParamValidation.error)[0].message,
+            zodErrorFmt(queryParamValidation.error)
+        );
+
+    const studentId = queryParamValidation.data.id;
+
+    const attendanceHistory = await db.attendance.findMany({
+        where: { studentId },
+        include: {
+            student: { include: { user: true } },
+            section: { include: { gradeLevel: true } }
+        },
+        orderBy: { date: "desc" }
+    });
+
+    return sendApiResponse({
+        res,
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Student attendance history retrieved successfully",
+        result: attendanceHistory
+    });
+});
+
+

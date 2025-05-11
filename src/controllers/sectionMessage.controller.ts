@@ -148,3 +148,29 @@ export const updateSectionMessageController = asyncWrapper(async (req, res) => {
         result: updatedMessage
     });
 });
+
+// New controller to get section messages by section id (from req.params)
+export const getSectionMessageBySectionIdController = asyncWrapper(async (req, res) => {
+    const queryParamValidation = queryValidator
+        .queryParamIDValidator("Section ID not provided or invalid.")
+        .safeParse(req.params);
+
+    if (!queryParamValidation.success)
+        throw RouteError.BadRequest(
+            zodErrorFmt(queryParamValidation.error)[0].message,
+            zodErrorFmt(queryParamValidation.error)
+       );
+
+    const sectionmessages = await db.sectionMessage.findMany({
+        where: { sectionId: queryParamValidation.data.id },
+        include: { sender: true, section: true }
+    });
+
+    return sendApiResponse({
+        res,
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Section messages retrieved successfully by section id",
+        result: sectionmessages,
+    });
+});

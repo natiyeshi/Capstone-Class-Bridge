@@ -25,6 +25,8 @@ export const getMe = asyncWrapper(async (req, res) => {
   if (existingUser.role === "UNKNOWN")
     throw RouteError.BadRequest("Please wait while admin defines your role.");
   
+  let isActivated = null
+
   let detail = null;
 
     if (existingUser.role === "TEACHER") {
@@ -33,26 +35,30 @@ export const getMe = asyncWrapper(async (req, res) => {
       });
       if (!teacher) throw RouteError.BadRequest("You are not a teacher.");
       detail = teacher;
+      isActivated = teacher.isActivated;
     } else if (existingUser.role === "PARENT") {
       const parent = await db.parent.findFirst({
         where: { userId: existingUser.id },
       });
       if (!parent) throw RouteError.BadRequest("You are not a parent.");
       detail = parent;
+      isActivated = parent.isActivated;
     } else if (existingUser.role === "DIRECTOR") {
       const director = await db.director.findFirst({
         where: { userId: existingUser.id },
       });
       if (!director) throw RouteError.BadRequest("You are not an director.");
       detail = director;
+      isActivated = true;
     }
+  
   
   return sendApiResponse({
     res,
     statusCode: StatusCodes.OK,
     success: true,
     message: "Users retrived successfully",
-    result: { user: existingUser, roleId : detail?.id },
+    result: { user: existingUser, roleId : detail?.id, isActivated },
   });
 });
 
