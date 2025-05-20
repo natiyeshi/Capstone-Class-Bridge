@@ -11,7 +11,7 @@ import {
 const router = Router();
 
 router.post("/", createMessageController);
-router.get("/", getMessageController);
+router.post("/get-message", getMessageController);
 router.get("/unread/:id", getUnreadMessagesController);
 router.delete("/:id", deleteMessageController);
 router.put("/:id", seenMessageController);

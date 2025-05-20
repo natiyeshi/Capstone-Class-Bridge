@@ -1,38 +1,9 @@
 import { StatusCodes } from "http-status-codes";
 import { asyncWrapper, RouteError, sendApiResponse } from "../utils";
-import { db, passwordCrypt, zodErrorFmt } from "../libs";
-import { Message } from "@prisma/client";
+import { db, zodErrorFmt } from "../libs";
 import { MessageSchema, GetMessageSchema } from "../validators/message.validator";
 import queryValidator from "../validators/query.validator";
-import { Server } from "socket.io";
-
-// Store user socket connections
-const userSockets = new Map<string, string>();
-
-// Helper to get io instance
-const getIO = (req: any): Server => {
-    const io = req.app.get('io');
-    if (!io) throw new Error('Socket.IO not initialized');
-    return io;
-};
-
-// Helper to handle socket authentication
-export const handleSocketAuth = (userId: string, socketId: string) => {
-    userSockets.set(userId, socketId);
-    console.log(`User ${userId} authenticated with socket ${socketId}`);
-};
-
-// Helper to handle socket disconnection
-export const handleSocketDisconnect = (socketId: string) => {
-    for (const [userId, id] of userSockets.entries()) {
-        if (id === socketId) {
-            userSockets.delete(userId);
-            console.log(`User ${userId} disconnected`);
-            return userId;
-        }
-    }
-    return null;
-};
+import { socketService } from "../services/socket.service";
 
 export const getMessageController = asyncWrapper(async (req, res) => {
     const bodyValidation = GetMessageSchema.safeParse(req.body);
@@ -70,12 +41,8 @@ export const getMessageController = asyncWrapper(async (req, res) => {
         });
 
         // Notify sender that their messages were seen via socket
-        const io = getIO(req);
         unreadMessages.forEach(message => {
-            const senderSocketId = userSockets.get(message.senderId);
-            if (senderSocketId) {
-                io.to(senderSocketId).emit('message_seen', message);
-            }
+            socketService.emitMessageSeen(message);
         });
     }
 
@@ -107,17 +74,8 @@ export const createMessageController = asyncWrapper(async (req, res) => {
         }
     });
 
-    // Emit the new message via socket
-    const io = getIO(req);
-    const receiverSocketId = userSockets.get(bodyValidation.data.receiverId);
-    
-    // Emit to sender
-    io.to(userSockets.get(bodyValidation.data.senderId) || '').emit('new_message', messageData);
-    
-    // Emit to receiver if online
-    if (receiverSocketId) {
-        io.to(receiverSocketId).emit('new_message', messageData);
-    }
+    // Emit the new message via socket service
+    socketService.emitNewMessage(messageData);
 
     return sendApiResponse({
         res,
