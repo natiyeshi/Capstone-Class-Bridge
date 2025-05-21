@@ -1,7 +1,17 @@
 import { Router } from "express";
 import middleware from "../middleware";
-import { getUsersController,getMe, updateUser, updateMe,deleteUserController, getUserById } from "../controllers/user.controller"
+import { 
+  getUsersController,
+  getMe, 
+  updateUser, 
+  updateMe,
+  deleteUserController, 
+  getUserById,
+  sendVerificationOTPController,
+  verifyPhoneNumberController
+} from "../controllers/user.controller"
 import Auth from "../middleware/auth";
+
 const router = Router();
 
 router.get("/", getUsersController);
@@ -11,5 +21,8 @@ router.put("/update-me",Auth.authenticationMiddleWare, updateMe);
 router.delete("/:id", deleteUserController);
 router.get("/:id", getUserById);
 
+// Phone verification routes
+router.post("/verify-phone/send", Auth.authenticationMiddleWare, sendVerificationOTPController);
+router.post("/verify-phone/verify", Auth.authenticationMiddleWare, verifyPhoneNumberController);
 
 export default router;

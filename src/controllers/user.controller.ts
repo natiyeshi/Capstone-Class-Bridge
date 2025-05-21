@@ -3,6 +3,8 @@ import { asyncWrapper, RouteError, sendApiResponse } from "../utils";
 import { db, passwordCrypt, zodErrorFmt } from "../libs";
 import { User } from "@prisma/client";
 import queryValidator from "../validators/query.validator";
+import { sendVerificationOTP, verifyOTP } from '../services/sms.service';
+import { z } from 'zod';
 
 export const getUsersController = asyncWrapper(async (req, res) => {
   const users = await db.user.findMany();
@@ -175,3 +177,96 @@ export const updateMe = asyncWrapper(async (req, res) => {
         result: user,
       });
     });
+
+// Validation schema for phone verification
+const verifyPhoneSchema = z.object({
+  code: z.string().length(6, "Verification code must be 6 digits")
+});
+
+export const sendVerificationOTPController = asyncWrapper(async (req, res) => {
+  const id = req.user?._id ?? null;
+  if (!id) throw RouteError.BadRequest("User not found");
+
+  const user = await db.user.findUnique({ where: { id } });
+  if (!user) {
+    throw RouteError.BadRequest("User not found");
+  }
+
+  if (!user.phoneNumber) {
+    throw RouteError.BadRequest("Phone number not set. Please update your profile with a phone number first.");
+  }
+
+  if (user.isPhoneVerified) {
+    throw RouteError.BadRequest("Phone number is already verified");
+  }
+
+  const result = await sendVerificationOTP(user.phoneNumber);
+  
+  if (!result.success) {
+    throw RouteError.BadRequest(result.error || "Failed to send verification code");
+  }
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Verification code sent successfully",
+    result: {
+      message: "A verification code has been sent to your phone number"
+    }
+  });
+});
+
+export const verifyPhoneNumberController = asyncWrapper(async (req, res) => {
+  const id = req.user?._id ?? null;
+  if (!id) throw RouteError.BadRequest("User not found");
+
+  const user = await db.user.findUnique({ where: { id } });
+  if (!user) {
+    throw RouteError.BadRequest("User not found");
+  }
+
+  if (!user.phoneNumber) {
+    throw RouteError.BadRequest("Phone number not set");
+  }
+
+  if (user.isPhoneVerified) {
+    throw RouteError.BadRequest("Phone number is already verified");
+  }
+
+  const bodyValidation = verifyPhoneSchema.safeParse(req.body);
+  if (!bodyValidation.success) {
+    throw RouteError.BadRequest(
+      zodErrorFmt(bodyValidation.error)[0].message,
+      zodErrorFmt(bodyValidation.error)
+    );
+  }
+
+  const { code } = bodyValidation.data;
+
+  const result = await verifyOTP(user.phoneNumber, code);
+  
+  if (!result.success) {
+    throw RouteError.BadRequest(result.error || "Invalid verification code");
+  }
+
+  // Update user's phone verification status
+  const updatedUser = await db.user.update({
+    where: { id },
+    data: { isPhoneVerified: true }
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Phone number verified successfully",
+    result: {
+      user: {
+        id: updatedUser.id,
+        phoneNumber: updatedUser.phoneNumber,
+        isPhoneVerified: updatedUser.isPhoneVerified
+      }
+    }
+  });
+});

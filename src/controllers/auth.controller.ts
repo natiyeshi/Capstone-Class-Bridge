@@ -88,6 +88,8 @@ export const signInController = asyncWrapper(async (req, res) => {
     });
     if (!director) throw RouteError.BadRequest("You are not an director.");
     detail = director;
+  } else {
+    throw RouteError.BadRequest("Invalid email or password");
   }
 
   const token = jwt.signToken({

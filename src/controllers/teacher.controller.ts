@@ -246,3 +246,35 @@ export const getRelatedUsersController = asyncWrapper(async (req, res) => {
     result: relatedUsers
   });
 });
+
+export const getTeacherSubjectsController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Teacher ID not provided or invalid.")
+    .safeParse(req.params);
+
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+
+  const teacherSubjects = await db.teacherSectionSubject.findMany({
+    where: {
+      teacherId: queryParamValidation.data.id
+    },
+    include: {
+      subject: true,
+      section: true
+    }
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Teacher subjects retrieved successfully",
+    result: teacherSubjects
+  });
+});
+
+

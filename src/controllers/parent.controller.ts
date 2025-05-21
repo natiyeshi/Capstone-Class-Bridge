@@ -100,7 +100,6 @@ export const createParentController = asyncWrapper(async (req, res) => {
          gender: bodyValidation.data.gender,
          dateOfBirth: bodyValidation.data.dateOfBirth,
          role : "PARENT",
-
        },
      });
    
@@ -109,6 +108,7 @@ export const createParentController = asyncWrapper(async (req, res) => {
     const parent = await db.parent.create({
         data : {
             userId : user.id,
+            isSMSUser: bodyValidation.data.isSMSUser ?? false,
         },
         include : {
             user : true,

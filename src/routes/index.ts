@@ -16,6 +16,7 @@ import sectionMessageRouter from "./sectionMessage.routes";
 import collectiveResultRouter from "./collectiveResult.routes";
 import rosterRouter from "./roster.routes";
 import gradeLevelMessageRouter from "./gradeLevelMessage.routes";
+import notificationRouter from "./notification.route";
 
 export default {
   authRoute,
@@ -35,5 +36,6 @@ export default {
   messageRouter,
   sectionMessageRouter,
   rosterRouter,
-  gradeLevelMessageRouter
+  gradeLevelMessageRouter,
+  notificationRouter
 };

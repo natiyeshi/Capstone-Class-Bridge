@@ -72,6 +72,7 @@ export const createDirectorController = asyncWrapper(async (req, res) => {
   });
 
 export const getRelatedUsersController = asyncWrapper(async (req, res) => {
+  const id = req.user?._id ?? null;
   const users = await db.user.findMany({
     where : {
       role : {
@@ -118,12 +119,14 @@ export const getRelatedUsersController = asyncWrapper(async (req, res) => {
     return roleData;
   });
 
+  const l = usersWithRoles.filter(d => d.id != id)
+
   return sendApiResponse({
     res,
     statusCode: StatusCodes.OK,
     success: true,
     message: "Users with role-specific information retrieved successfully",
-    result: usersWithRoles,
+    result: l,
   });
 });
 

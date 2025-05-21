@@ -101,6 +101,15 @@ export const createAnnouncementController = asyncWrapper(async (req, res) => {
     },
   });
 
+  // Create notification about the new announcement
+   await db.notification.create({
+    data: {
+      topic: "New Announcement", 
+      message: `A new announcement "${topic}" has been posted`,
+      link: `/announcements/${announcement.id}`,
+    } as any
+  });
+
   return sendApiResponse({
     res,
     statusCode: StatusCodes.CREATED,

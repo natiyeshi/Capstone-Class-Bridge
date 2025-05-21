@@ -7,6 +7,7 @@ import {
   deleteTeacherController,
   getTeachersByIdController, 
   getRelatedUsersController,
+  getTeacherSubjectsController,
 } from "../controllers/teacher.controller"
 import Auth from "../middleware/auth";
 
@@ -18,5 +19,6 @@ router.get("/:id", getTeachersByIdController);
 router.post("/activate", Auth.authenticationMiddleWare, activateTeacherController);
 router.delete("/:id", deleteTeacherController);
 router.get("/:id/related-users", getRelatedUsersController);
+router.get("/:id/subjects", getTeacherSubjectsController);
 
 export default router;

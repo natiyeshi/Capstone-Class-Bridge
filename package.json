@@ -13,6 +13,7 @@
   "description": "A modern Node.js TypeScript template with essential configurations for building RESTful APIs. Includes support for environment variable management, logging, and development tooling.",
   "dependencies": {
     "@prisma/client": "^6.0.1",
+    "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

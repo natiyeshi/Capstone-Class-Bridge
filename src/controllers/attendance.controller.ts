@@ -323,3 +323,5 @@ export const getStudentAttendanceHistoryController = asyncWrapper(async (req, re
 });
 
 
+// Add List of subjects to teache
+

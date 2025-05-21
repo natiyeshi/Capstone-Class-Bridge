@@ -9,7 +9,7 @@ export const CreateSectionSchema = z.object({
   }),
   homeRoom: z.string({ message: "Home Room Id should be string!" }).min(1, {
     message: "Invalid Home room id",
-  }).optional().nullable(),
+  }),
   students: z.array(z.string({ message: "Student id should be string!" })).optional().nullable(),
 });
 

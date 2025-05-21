@@ -32,6 +32,7 @@ app.use("/api/v1/message", routes.messageRouter);
 app.use("/api/v1/section-message", routes.sectionMessageRouter);
 app.use('/api/v1/roster', routes.rosterRouter);
 app.use('/api/v1/grade-level-message', routes.gradeLevelMessageRouter);
+app.use('/api/v1/notification', routes.notificationRouter);
 
 // Route error handling middleware
 app.use(middlewares.routeErrorHandlingMiddleware);

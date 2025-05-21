@@ -30,6 +30,10 @@ export const signUpSchema = z.object({
   profile: z
     .string({ message: "Profile has to be a string" })
     .optional(),
+  isSMSUser: z
+    .boolean({ message: "isSMSUser must be a boolean" })
+    .optional()
+    .default(false),
 })
 
 export const signUpStudentSchema = z.object({
