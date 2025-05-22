@@ -102,6 +102,15 @@ export const createSectionController = asyncWrapper(async (req, res) => {
       });
     
       if (!teacherExists) throw RouteError.BadRequest("Home Room Id doesn't exist.");
+
+      // Check if teacher is already assigned as homeroom to another section
+      const existingTeacherSection = await db.section.findFirst({
+        where: { teacherId: bodyValidation.data.homeRoom },
+      });
+
+      if (existingTeacherSection) {
+        throw RouteError.BadRequest("This teacher is already assigned as homeroom teacher to another section.");
+      }
     }
     const students = bodyValidation.data.students ?? []
 

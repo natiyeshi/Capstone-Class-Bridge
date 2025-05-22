@@ -277,4 +277,27 @@ export const getTeacherSubjectsController = asyncWrapper(async (req, res) => {
   });
 });
 
+export const getAvailableHomeroomTeachersController = asyncWrapper(async (req, res) => {
+  // Find all teachers who are not currently assigned as homeroom teachers
+  const availableTeachers = await db.teacher.findMany({
+    where: {
+      // Find teachers where there is no section with this teacher as homeroom
+      Section: {
+        none: {} // This ensures the teacher is not a homeroom teacher for any section
+      }
+    },
+    include: {
+      user: true
+    }
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Available homeroom teachers retrieved successfully",
+    result: availableTeachers
+  });
+});
+
 

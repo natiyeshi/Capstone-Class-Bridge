@@ -8,6 +8,7 @@ import {
   getTeachersByIdController, 
   getRelatedUsersController,
   getTeacherSubjectsController,
+  getAvailableHomeroomTeachersController,
 } from "../controllers/teacher.controller"
 import Auth from "../middleware/auth";
 
@@ -15,6 +16,7 @@ const router = Router();
 
 router.post("/", createTeacherController);
 router.get("/", getTeachersController);
+router.get("/available-homeroom", getAvailableHomeroomTeachersController);
 router.get("/:id", getTeachersByIdController);
 router.post("/activate", Auth.authenticationMiddleWare, activateTeacherController);
 router.delete("/:id", deleteTeacherController);
