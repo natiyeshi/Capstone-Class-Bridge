@@ -88,47 +88,60 @@ export const createAttendanceController = asyncWrapper(async (req, res) => {
 
   const { date, status, studentId, sectionId } = bodyValidation.data;
 
-    const userExists = await db.student.findUnique({
-        where: { id: studentId },
-    });
+  const userExists = await db.student.findUnique({
+    where: { id: studentId },
+  });
 
-    if (!userExists) {
-        throw RouteError.BadRequest("Student does not exist");
-    }
-    const sectionExists = await db.section.findUnique({
-        where: { id: sectionId },
-    });
+  if (!userExists) {
+    throw RouteError.BadRequest("Student does not exist");
+  }
 
-    if (!sectionExists) {
-        throw RouteError.BadRequest("Section does not exist");
-    }
+  const sectionExists = await db.section.findUnique({
+    where: { id: sectionId },
+  });
 
-    const checkDuplicate = await db.attendance.findFirst({
-        where: {
-            studentId: studentId,
-            date: date,
-        },
-    });
+  if (!sectionExists) {
+    throw RouteError.BadRequest("Section does not exist");
+  }
 
-    if (checkDuplicate) {
-        throw RouteError.BadRequest("Attendance Already Registered!");
-    }
-
-
-  const attendance = await db.attendance.create({
-    data: {
-      date,
-      status,
-      studentId,
-      sectionId,
+  // Check if attendance record already exists
+  const existingAttendance = await db.attendance.findFirst({
+    where: {
+      studentId: studentId,
+      date: date,
+      sectionId: sectionId,
     },
   });
 
+  let attendance;
+  
+  if (existingAttendance) {
+    // Update existing attendance record
+    attendance = await db.attendance.update({
+      where: {
+        id: existingAttendance.id
+      },
+      data: {
+        status,
+      },
+    });
+  } else {
+    // Create new attendance record
+    attendance = await db.attendance.create({
+      data: {
+        date,
+        status,
+        studentId,
+        sectionId,
+      },
+    });
+  }
+
   return sendApiResponse({
     res,
-    statusCode: StatusCodes.CREATED,
+    statusCode: existingAttendance ? StatusCodes.OK : StatusCodes.CREATED,
     success: true,
-    message: "Attendance created successfully",
+    message: existingAttendance ? "Attendance updated successfully" : "Attendance created successfully",
     result: attendance,
   });
 });

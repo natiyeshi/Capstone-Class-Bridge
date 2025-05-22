@@ -156,3 +156,31 @@ export const deleteStudentController = asyncWrapper(async (req, res) => {
        result: student,
      });
    });
+
+export const getUnassignedStudentsController = asyncWrapper(async (req, res) => {
+  // Find all students who are not assigned to any section
+  const unassignedStudents = await db.student.findMany({
+    where: {
+      sectionId: null // This finds students where sectionId is null
+    },
+    include: {
+      user: true,
+      parent: {
+        include: {
+          user: true
+        }
+      }
+    }
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Unassigned students retrieved successfully",
+    result: unassignedStudents
+  });
+});
+
+
+   

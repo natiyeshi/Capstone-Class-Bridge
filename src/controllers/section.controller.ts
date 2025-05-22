@@ -80,8 +80,6 @@ export const createSectionController = asyncWrapper(async (req, res) => {
             zodErrorFmt(bodyValidation.error)
         );}
 
-
-    
     const gradeLevelId = await db.gradeLevel.findFirst({
       where: { id : bodyValidation.data.gradeLevelId },
     });
@@ -94,8 +92,6 @@ export const createSectionController = asyncWrapper(async (req, res) => {
     
     if (existingSection) throw RouteError.BadRequest("Section with this grade level is already in use.");
   
-
-    
     if(bodyValidation.data.homeRoom){
       const teacherExists = await db.teacher.findFirst({
         where: { id : bodyValidation.data.homeRoom },
@@ -112,7 +108,31 @@ export const createSectionController = asyncWrapper(async (req, res) => {
         throw RouteError.BadRequest("This teacher is already assigned as homeroom teacher to another section.");
       }
     }
+
     const students = bodyValidation.data.students ?? []
+
+    // Check if any students are already assigned to sections
+    const studentsWithSections = await db.student.findMany({
+      where: { 
+        id: { in: students },
+        sectionId: { not: null } // Find students who are already assigned to any section
+      },
+      select: { 
+        id: true,
+        section: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
+
+    if (studentsWithSections.length > 0) {
+      const alreadyAssignedStudents = studentsWithSections.map(student => 
+        `Student ID ${student.id} is already assigned to section ${student.section?.name}`
+      );
+      throw RouteError.BadRequest(`Some students are already assigned to sections`);
+    }
 
     const validStudents = await db.student.findMany({
       where: { id: { in: students } },
@@ -126,7 +146,6 @@ export const createSectionController = asyncWrapper(async (req, res) => {
     if (invalidStudents.length > 0) {
         throw RouteError.BadRequest(`Invalid student IDs: ${invalidStudents.join(", ")}`);
     }
-    console.log("not working")
 
     const studentsList :string[] = bodyValidation.data.students ?? []
     const section = await db.section.create({
@@ -135,15 +154,15 @@ export const createSectionController = asyncWrapper(async (req, res) => {
         gradeLevelId: bodyValidation.data.gradeLevelId,
         teacherId: bodyValidation.data.homeRoom,
         students: {
-        connect: studentsList.map(studentId => ({ id: studentId })),
+          connect: studentsList.map(studentId => ({ id: studentId })),
         },
       },
       include: {
         gradeLevel: true,
         students: {
-        include: {
-          user: true,
-        },
+          include: {
+            user: true,
+          },
         },
       },
     });
@@ -183,6 +202,31 @@ export const createSectionController = asyncWrapper(async (req, res) => {
 
     const students = bodyValidation ?? [];
 
+    // First check if any of these students are already assigned to any section
+    const studentsWithSections = await db.student.findMany({
+      where: { 
+        id: { in: students },
+        sectionId: { not: null } // Find students who are already assigned to a section
+      },
+      select: { 
+        id: true,
+        section: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
+
+    console.log(studentsWithSections)
+
+    if (studentsWithSections.length > 0) {
+      const alreadyAssignedStudents = studentsWithSections.map(student => 
+        `Student ID ${student.id} is already assigned to section ${student.section?.name}`
+      );
+      throw RouteError.BadRequest(`Some students are already assigned to sections`);
+    }
+
     const validStudents = await db.student.findMany({
       where: { id: { in: students } },
       select: { id: true },
@@ -199,16 +243,16 @@ export const createSectionController = asyncWrapper(async (req, res) => {
     const updatedSection = await db.section.update({
       where: { id: queryParamValidation.data.id },
       data: {
-      students: {
-        connect: validStudentIds.map(studentId => ({ id: studentId })),
-      },
-      },
-      include: {
-      students: {
-        include: {
-        user: true,
+        students: {
+          connect: validStudentIds.map(studentId => ({ id: studentId })),
         },
       },
+      include: {
+        students: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 
@@ -247,6 +291,35 @@ export const createSectionController = asyncWrapper(async (req, res) => {
 
     if (!existingSection)
       throw RouteError.NotFound("Section not found with the provided ID.");
+
+    // First check if any of these students are already assigned to other sections
+    const studentsWithSections = await db.student.findMany({
+      where: { 
+        id: { in: bodyValidation },
+        sectionId: { not: null } // Find students who are already assigned to any section
+      },
+      select: { 
+        id: true,
+        section: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
+    });
+
+    // Filter out students who are already in this section
+    const studentsInOtherSections = studentsWithSections.filter(
+      student => student.section?.id !== sectionId
+    );
+
+    if (studentsInOtherSections.length > 0) {
+      const alreadyAssignedStudents = studentsInOtherSections.map(student => 
+        `Student ID ${student.id} is already assigned to section ${student.section?.name}`
+      );
+      throw RouteError.BadRequest(`Some students are already assigned to other sections: ${alreadyAssignedStudents.join(", ")}`);
+    }
 
     const validStudents = await db.student.findMany({
       where: { id: { in: bodyValidation } },
