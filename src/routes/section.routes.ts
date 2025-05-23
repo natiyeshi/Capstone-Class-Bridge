@@ -19,7 +19,7 @@ const router = Router();
 router.get("/", getSectionController);
 router.get("/role",Auth.authenticationMiddleWare, getSectionByRoleController);
 router.post("/", createSectionController);
-router.get("/:id", getSectionByIdController);
+router.get("/:id",Auth.authenticationMiddleWare, getSectionByIdController);
 router.post("/addStudent/:id", addStudentOnSectionController);
 router.get("/gradeLevel/:id", getSectionByGradeLevelController);
 router.post("/addStudents/:id", addStudentsToSectionController);

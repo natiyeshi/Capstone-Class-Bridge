@@ -45,6 +45,7 @@ export const getSectionController = asyncWrapper(async (req, res) => {
 
 
 export const getSectionByIdController = asyncWrapper(async (req, res) => {
+  const user : any = req.user;
   const queryParamValidation = queryValidator
     .queryParamIDValidator("Section ID not provided or invalid.")
     .safeParse(req.params);
@@ -84,12 +85,26 @@ export const getSectionByIdController = asyncWrapper(async (req, res) => {
       }
     }
   });
+
+
+  let subject : any;
+  if(user.role === USER_ROLE.TEACHER){
+    const teacherSectionSubject = await db.teacherSectionSubject.findFirst({
+      where: {
+        teacherId: user.id,
+        sectionId: section?.id,
+      },
+    });
+    subject = teacherSectionSubject?.subjectId;
+    
+  }
+
   return sendApiResponse({
     res,
     statusCode: StatusCodes.OK,
     success: true,
     message: "Section retrived successfully",
-    result: section,
+    result: {section,subject},
   });
 });
 
@@ -737,6 +752,8 @@ export const getSectionByRoleController = asyncWrapper(async (req, res) => {
           },
         },
       });
+
+      
       break;
 
     case USER_ROLE.PARENT:
