@@ -264,13 +264,17 @@ export const createSectionCollectiveResultsController = asyncWrapper(async (req,
     // Create or update collective results for each student
     const collectiveResults = await Promise.all(
         students.map(async (student) => {
-            // Calculate total score
-            const totalScore = student.Result.reduce((sum: number, result: Result) => {
+            // Calculate total score and average
+            const results = student.Result;
+            const totalScore = results.reduce((sum: number, result: Result) => {
                 const score = (result.test1 || 0) + (result.test2 || 0) + 
                             (result.mid || 0) + (result.final || 0) + 
                             (result.assignment || 0) + (result.quiz || 0);
                 return sum + score;
             }, 0);
+
+            // Calculate average by dividing total score by number of subjects
+            const average = results.length > 0 ? totalScore / results.length : 0;
 
             // Create or update collective result
             return db.collectiveResult.upsert({
@@ -281,19 +285,21 @@ export const createSectionCollectiveResultsController = asyncWrapper(async (req,
                     studentId: student.id,
                     sectionId: queryParamValidation.data.id,
                     totalScore,
+                    average,
                     isAvailable: true
                 },
                 update: {
                     totalScore,
+                    average,
                     isAvailable: true
                 }
             });
         })
     );
 
-    // Sort students by total score and assign ranks
+    // Sort students by average score and assign ranks
     const sortedResults = collectiveResults
-        .sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0))
+        .sort((a, b) => (b.average || 0) - (a.average || 0))
         .map((result, index) => ({
             ...result,
             rank: index + 1
@@ -313,7 +319,7 @@ export const createSectionCollectiveResultsController = asyncWrapper(async (req,
         res,
         statusCode: StatusCodes.CREATED,
         success: true,
-        message: "Collective results created successfully",
+        message: "Collective results created successfully with averages",
         result: sortedResults
     });
 });

@@ -9,12 +9,15 @@ import {
   getSectionByGradeLevelController, 
   removeStudentsFromSectionController, 
   updateSectionController,
-  assignTeacherToSectionController 
+  assignTeacherToSectionController, 
+  getSectionByRoleController
 } from "../controllers/section.controller"
+import Auth from "../middleware/auth";
 
 const router = Router();
 
 router.get("/", getSectionController);
+router.get("/role",Auth.authenticationMiddleWare, getSectionByRoleController);
 router.post("/", createSectionController);
 router.get("/:id", getSectionByIdController);
 router.post("/addStudent/:id", addStudentOnSectionController);

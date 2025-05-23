@@ -1,9 +1,11 @@
 import { StatusCodes } from "http-status-codes";
 import { asyncWrapper, RouteError, sendApiResponse } from "../utils";
 import { db, passwordCrypt, zodErrorFmt } from "../libs";
-import { Section } from "@prisma/client";
-import {CreateSectionSchema} from "../validators/section.validator";
+import { Section, User, USER_ROLE } from "@prisma/client";
+import { CreateSectionSchema } from "../validators/section.validator";
 import queryValidator from "../validators/query.validator";
+
+
 
 export const getSectionController = asyncWrapper(async (req, res) => {
   const section = await db.section.findMany({
@@ -14,6 +16,17 @@ export const getSectionController = asyncWrapper(async (req, res) => {
         }
       },
       gradeLevel : true,
+      teacherSectionSubject: {
+        include: {
+          teacher: {
+            include: {
+              user: true,
+            },
+          },
+          subject: true,
+          section: true,
+        },
+      },
       homeRoom : {
         include : {
           user : true,
@@ -47,6 +60,17 @@ export const getSectionByIdController = asyncWrapper(async (req, res) => {
       id: queryParamValidation.data.id,
     },
     include:{
+      teacherSectionSubject: {
+        include: {
+          teacher: {
+            include: {
+              user: true,
+            },
+          },
+          subject: true,
+          section: true,
+        },
+      },
       students : {
         include : {
           user : true,
@@ -521,6 +545,17 @@ export const createSectionController = asyncWrapper(async (req, res) => {
             user: true,
           },
         },
+        teacherSectionSubject: {
+          include: {
+            teacher: {
+              include: {
+                user: true,
+              },
+            },
+            subject: true,
+            section: true,
+          },
+        },
         gradeLevel: true,
         homeRoom: {
           include: {
@@ -584,12 +619,11 @@ export const assignTeacherToSectionController = asyncWrapper(async (req, res) =>
     where: {
       teacherId,
       sectionId: queryParamValidation.data.id,
-      subjectId
     }
   });
 
   if (existingAssignment)
-    throw RouteError.BadRequest("Teacher is already assigned to this section and subject.");
+    throw RouteError.BadRequest("Teacher is already assigned to this section.");
 
   // Create the assignment
   const assignment = await db.teacherSectionSubject.create({
@@ -615,6 +649,154 @@ export const assignTeacherToSectionController = asyncWrapper(async (req, res) =>
     success: true,
     message: "Teacher assigned to section successfully",
     result: assignment
+  });
+});
+
+export const getSectionByRoleController = asyncWrapper(async (req, res) => {
+  const user : any = req.user;
+  
+  if (!user) {
+    throw RouteError.Unauthorized("User not authenticated");
+  }
+
+  let sections;
+
+  switch (user.role) {
+    case USER_ROLE.DIRECTOR:
+      // Directors can see all sections
+      sections = await db.section.findMany({
+        include: {
+          students: {
+            include: {
+              user: true,
+            },
+          },
+          teacherSectionSubject: {
+            include: {
+              teacher: {
+                include: {
+                  user: true,
+                },
+              },
+              subject: true,
+            },
+          },
+          gradeLevel: true,
+          homeRoom: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+      break;
+
+    case USER_ROLE.TEACHER:
+      // Get teacher's ID
+      const teacher = await db.teacher.findFirst({
+        where: { userId: user.id },
+      });
+
+      if (!teacher) {
+        throw RouteError.NotFound("Teacher profile not found");
+      }
+
+      // Get sections where teacher is assigned
+      sections = await db.section.findMany({
+        where: {
+          teacherSectionSubject: {
+            some: {
+              teacherId: teacher.id,
+            },
+          },
+        },
+        include: {
+          students: {
+            include: {
+              user: true,
+            },
+          },
+          teacherSectionSubject: {
+            where: {
+              teacherId: teacher.id,
+            },
+            include: {
+              teacher: {
+                include: {
+                  user: true,
+                },
+              },
+              subject: true,
+            },
+          },
+          gradeLevel: true,
+          homeRoom: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+      break;
+
+    case USER_ROLE.PARENT:
+      // Get parent's ID
+      const parent = await db.parent.findFirst({
+        where: { userId: user.id },
+      });
+
+      if (!parent) {
+        throw RouteError.NotFound("Parent profile not found");
+      }
+
+      // Get sections of parent's students
+      sections = await db.section.findMany({
+        where: {
+          students: {
+            some: {
+              parentId: parent.id,
+            },
+          },
+        },
+        include: {
+          students: {
+            where: {
+              parentId: parent.id,
+            },
+            include: {
+              user: true,
+            },
+          },
+          teacherSectionSubject: {
+            include: {
+              teacher: {
+                include: {
+                  user: true,
+                },
+              },
+              subject: true,
+            },
+          },
+          gradeLevel: true,
+          homeRoom: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+      break;
+
+    default:
+      throw RouteError.Forbidden("You don't have permission to view sections");
+  }
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Sections retrieved successfully based on role",
+    result: sections,
   });
 });
 

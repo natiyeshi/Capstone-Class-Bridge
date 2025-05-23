@@ -16,10 +16,11 @@ const authenticationMiddleWare = asyncWrapper(async (req, _, next) => {
 
   const payload = jwt.verify(token, ENV.JWT_SECRET) as {
     userId: string;
+    role: string;
   };
 
-  const { userId } = payload;
-  req.user = { _id: userId };
+  const { userId,role } = payload;
+  req.user = { _id: userId, role : role } as any;
   next();
 });
 

@@ -157,12 +157,14 @@ model CollectiveResult {
   conduct     Conduct?
   rank        Int?
   feedback    String?
+  
   Roaster     Roaster? @relation(fields: [roasterId], references: [id])
   roasterId   String?
   studentId   String?  @unique()
   sectionId   String?
   isAvailable Boolean  @default(false)
   totalScore  Float?   @default(0.0)
+  average     Float?   @default(0.0)
 }
 
 model Calendar {
