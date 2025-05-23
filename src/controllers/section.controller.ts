@@ -85,6 +85,7 @@ export const getSectionByIdController = asyncWrapper(async (req, res) => {
       }
     }
   });
+  console.log("TEst")
 
 
   let subject : any;
@@ -96,7 +97,7 @@ export const getSectionByIdController = asyncWrapper(async (req, res) => {
       },
     });
     subject = teacherSectionSubject?.subjectId;
-    
+    console.log("this is teacher")
   }
 
   return sendApiResponse({
@@ -104,7 +105,7 @@ export const getSectionByIdController = asyncWrapper(async (req, res) => {
     statusCode: StatusCodes.OK,
     success: true,
     message: "Section retrived successfully",
-    result: {section,subject},
+    result: {...section,subject},
   });
 });
 
