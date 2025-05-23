@@ -130,4 +130,74 @@ export const getRelatedUsersController = asyncWrapper(async (req, res) => {
   });
 });
 
+export const blockUserController = asyncWrapper(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    throw RouteError.BadRequest("User ID is required");
+  }
+
+  const user = await db.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw RouteError.NotFound("User not found");
+  }
+
+  if (user.isBlocked) {
+    throw RouteError.BadRequest("User is already blocked");
+  }
+
+  const updatedUser = await db.user.update({
+    where: { id: userId },
+    data: { isBlocked: true },
+  });
+
+  const { password, ...userDto } = updatedUser;
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "User blocked successfully",
+    result: userDto,
+  });
+});
+
+export const unblockUserController = asyncWrapper(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    throw RouteError.BadRequest("User ID is required");
+  }
+
+  const user = await db.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw RouteError.NotFound("User not found");
+  }
+
+  if (!user.isBlocked) {
+    throw RouteError.BadRequest("User is not blocked");
+  }
+
+  const updatedUser = await db.user.update({
+    where: { id: userId },
+    data: { isBlocked: false },
+  });
+
+  const { password, ...userDto } = updatedUser;
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "User unblocked successfully",
+    result: userDto,
+  });
+});
+
 

@@ -8,13 +8,13 @@ datasource db {
 }
 
 model User {
-  id              String  @id @unique @default(cuid())
-  email           String  @unique
-  password        String
-  firstName       String
-  lastName        String
-  isPhoneVerified Boolean @default(false)
-
+  id                String              @id @unique @default(cuid())
+  email             String              @unique
+  password          String
+  firstName         String
+  lastName          String
+  isPhoneVerified   Boolean             @default(false)
+  isBlocked         Boolean             @default(false)
   profile           String?
   phoneNumber       String?
   gender            String?
