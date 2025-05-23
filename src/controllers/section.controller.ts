@@ -641,6 +641,17 @@ export const assignTeacherToSectionController = asyncWrapper(async (req, res) =>
   if (existingAssignment)
     throw RouteError.BadRequest("Teacher is already assigned to this section.");
 
+  const existingSubject = await db.teacherSectionSubject.findFirst({
+    where: {
+      sectionId: queryParamValidation.data.id,
+      subjectId
+    }
+  });
+
+  if (existingSubject)
+    throw RouteError.BadRequest("Subject is already assigned");
+
+
   // Create the assignment
   const assignment = await db.teacherSectionSubject.create({
     data: {
