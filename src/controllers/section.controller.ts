@@ -6,16 +6,66 @@ import { CreateSectionSchema } from "../validators/section.validator";
 import queryValidator from "../validators/query.validator";
 
 
+export const getSectionsController = asyncWrapper(async (req : any, res) => {
+  const { role, _id } = req.user;
 
-export const getSectionController = asyncWrapper(async (req, res) => {
-  const section = await db.section.findMany({
-    include:{
-      students : {
-        include : {
-          user : true,
+  let whereClause = {};
+  
+  // Different queries based on role
+  switch (role) {
+    case 'DIRECTOR':
+      // Directors can see all sections
+      whereClause = {};
+      break;
+      
+    case 'PARENT':
+      // Parents can only see sections where their children are enrolled
+      whereClause = {
+        students: {
+          some: {
+            user: {
+              parentId: _id
+            }
+          }
+        }
+      };
+      break;
+      
+    case 'TEACHER':
+      // Teachers can see sections they teach or are homeroom of
+      whereClause = {
+        OR: [
+          {
+            teacherSectionSubject: {
+              some: {
+                teacher: {
+                  userId: _id
+                }
+              }
+            }
+          },
+          {
+            homeRoom: {
+              userId: _id
+            }
+          }
+        ]
+      };
+      break;
+      
+    default:
+      throw RouteError.Forbidden("You don't have permission to view sections");
+  }
+
+  const sections = await db.section.findMany({
+    where: whereClause,
+    include: {
+      students: {
+        include: {
+          user: true,
         }
       },
-      gradeLevel : true,
+      gradeLevel: true,
       teacherSectionSubject: {
         include: {
           teacher: {
@@ -27,19 +77,20 @@ export const getSectionController = asyncWrapper(async (req, res) => {
           section: true,
         },
       },
-      homeRoom : {
-        include : {
-          user : true,
+      homeRoom: {
+        include: {
+          user: true,
         }
       }
     }
   });
+
   return sendApiResponse({
     res,
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Section retrived successfully",
-    result: section,
+    message: "Sections retrieved successfully",
+    result: sections,
   });
 });
 

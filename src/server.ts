@@ -3,10 +3,19 @@ import app from "./app";
 import { asyncWrapper, RouteError, sendApiResponse } from "./utils";
 import { db, zodErrorFmt } from "./libs";
 import { MessageSchema, GetMessageSchema } from "./validators/message.validator";
+import { SectionMessageSchema } from "./validators/sectionMessage.validator";
 
 // import { ENV } from "./config";
 // import { initializeSocket } from "./libs/socket";
 // import { initializeSocketRoutes } from "./routes/socket.routes";
+import {
+  handleAllMessages,
+  handleSendMessage,
+  handleSectionAllMessages,
+  handleSectionSendMessage,
+  handleGradeLevelAllMessages,
+  handleGradeLevelSendMessage
+} from "./libs/socket.handlers";
 
 const { Server } = require("socket.io"); // Import Socket.IO Server class
 
@@ -20,94 +29,35 @@ const io = new Server(server, {
   },
 });
 
-interface sendData {
+export interface sendData {
   success: boolean;
   senderId : string;
   receiverId : string;
   data: any;
+  error : string | null,
 }
 
+export interface sectionSendData {
+  success: boolean;
+  sectionId : string;
+  error : string | null;
+  data: any;
+}
 io.on("connection", async (socket: any) => {
-  console.log("User connected ", socket.id); // Log the socket ID of the connected user
+  console.log("User connected ", socket.id);
 
-  // Handle all_messages event
-  socket.on("all_messages", async (data: any) => {
-    try {
-      // Fetch all messages where the user is either sender or receiver
-      const messages = await db.message.findMany({
-        where: {
-          OR: [
-            { receiverId: data.receiverId, senderId: data.senderId },
-            { receiverId: data.senderId, senderId: data.receiverId }
-          ],
-        },
-        include: {
-          receiver: true,
-          sender: true,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
+  // Direct Message Events
+  socket.on("all_messages", (data: any) => handleAllMessages(socket, data));
+  socket.on("send_message", (data: any) => handleSendMessage(io, data));
 
-      // Send the messages back to the client
-      socket.emit("all_messages_response", {
-        success: true,
-        data: messages
-      });
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      socket.emit("all_messages_response", {
-        success: false,
-        error: "Failed to fetch messages"
-      });
-    }
-  });
+  // Section Message Events
+  socket.on("section_all_messages", (sectionId: string) => handleSectionAllMessages(socket, sectionId));
+  socket.on("section_send_message", (data: any) => handleSectionSendMessage(io, data));
 
-  // Listen for "send_message" events from the connected client
-  socket.on("send_message", async (data: any ) => {
-  
-    console.log("Message Received ", data); // Log the received message data
-
-    const bodyValidation = MessageSchema.safeParse(data);
-   
-   if (!bodyValidation.success)
-     {
-        const response: sendData = {
-          success: false,
-          senderId: data.senderId,
-          receiverId: data.receiverId,
-          data: null
-        }      
-        io.emit("receive_message", response);
-        return;
-     }
-
-    // Perform sentiment analysis
-
-    const messageData = await db.message.create({
-        data: {
-            ...bodyValidation.data,
-        },
-        include: {
-            sender: true,
-            receiver: true
-        }
-    });
-
-      // Emit the received message data to all connected clients
-      io.emit("receive_message", {
-        success: true,
-        senderId: data.senderId,
-        receiverId: data.receiverId,
-        data: messageData
-      } as sendData);
-  });
-
-  
-
+  // Grade Level Message Events
+  socket.on("grade_level_all_messages", (gradeLevelId: string) => handleGradeLevelAllMessages(socket, gradeLevelId));
+  socket.on("grade_level_send_message", (data: any) => handleGradeLevelSendMessage(io, data));
 });
-
 // Initialize Socket.IO
 // const io = initializeSocket(server);
 // Initialize socket routes

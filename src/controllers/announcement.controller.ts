@@ -3,6 +3,8 @@ import { asyncWrapper, RouteError, sendApiResponse } from "../utils";
 import { db, zodErrorFmt } from "../libs";
 import { createAnnouncementSchema } from "../validators/announcement.validator";
 import queryValidator from "../validators/query.validator";
+// import { notificationQueue } from "../libs/que";
+
 
 
 export const getAnnouncementController = asyncWrapper(async (req, res) => {
@@ -73,7 +75,7 @@ export const deleteAnnouncementController = asyncWrapper(async (req, res) => {
 
 export const createAnnouncementController = asyncWrapper(async (req, res) => {
   const bodyValidation = createAnnouncementSchema.safeParse(req.body);
-
+  
   if (!bodyValidation.success) {
     throw RouteError.BadRequest(
       zodErrorFmt(bodyValidation.error)[0].message,
@@ -102,13 +104,30 @@ export const createAnnouncementController = asyncWrapper(async (req, res) => {
   });
 
   // Create notification about the new announcement
-   await db.notification.create({
-    data: {
-      topic: "New Announcement", 
-      message: `A new announcement "${topic}" has been posted`,
-      link: `/announcements/${announcement.id}`,
-    } as any
-  });
+ 
+
+  const data = {
+    topic: "New Announcement", 
+    message: `A new announcement "${topic}" has been posted`,
+    link: `/announcements/${announcement.id}`,
+    senderId : req.user?._id
+  } 
+
+  // await notificationQueue.add('send-notifications',data);
+
+  const users = await db.user.findMany();
+
+  for (const user of users) {
+    await db.notification.create({
+      data: {
+        topic: data.topic,
+        message: data.message,
+        link: data.link,
+        userId: user.id
+      }
+    });
+  }
+
 
   return sendApiResponse({
     res,

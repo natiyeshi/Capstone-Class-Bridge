@@ -78,6 +78,13 @@ export const deleteSectionMessageController = asyncWrapper(async (req, res) => {
           .queryParamIDValidator("Section Message ID not provided or invalid.")
           .safeParse(req.params);
    
+    if(!queryParamValidation.success){
+        throw RouteError.BadRequest(
+            zodErrorFmt(queryParamValidation.error)[0].message,
+            zodErrorFmt(queryParamValidation.error)
+        );
+    }
+
     const sectionmessage = await db.sectionMessage.delete({
         where: { id: queryParamValidation.data!.id },
     });

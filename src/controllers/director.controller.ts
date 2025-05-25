@@ -200,4 +200,49 @@ export const unblockUserController = asyncWrapper(async (req, res) => {
   });
 });
 
+export const forgetPasswordController = asyncWrapper(async (req, res) => {
+  const { userId, newPassword } = req.body;
+
+  if (!userId || !newPassword) {
+    throw RouteError.BadRequest("User ID and new password are required");
+  }
+
+  // Check if user exists and is not a director
+  const user = await db.user.findFirst({
+    where: {
+      id: userId,
+      role: {
+        not: 'DIRECTOR'
+      }
+    }
+  });
+
+  if (!user) {
+    throw RouteError.NotFound("User not found or is a director");
+  }
+
+  // Hash the new password
+  const hashedPassword = await passwordCrypt.hashPassword(newPassword);
+
+  // Update the user's password
+  const updatedUser = await db.user.update({
+    where: { id: userId },
+    data: { password: hashedPassword },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      // Don't return password
+    }
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Password updated successfully",
+    result: updatedUser
+  });
+});
+
 

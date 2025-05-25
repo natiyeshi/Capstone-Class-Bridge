@@ -13,6 +13,7 @@ const createNotificationSchema = z.object({
 });
 
 export const getNotificationsController = asyncWrapper(async (req, res) => {
+  const id = req.user?._id
   const notifications = await db.notification.findMany({
     include: {
       user: {
@@ -26,7 +27,11 @@ export const getNotificationsController = asyncWrapper(async (req, res) => {
     },
     orderBy: {
       createdAt: 'desc'
+    },
+    where : {
+      userId : id
     }
+
   });
 
   return sendApiResponse({
@@ -218,10 +223,11 @@ export const deleteNotificationController = asyncWrapper(async (req, res) => {
       zodErrorFmt(queryParamValidation.error)
     );
   }
+  const userId = req.user?._id
 
   // Check if notification exists
   const notificationExists = await db.notification.findUnique({
-    where: { id: queryParamValidation.data.id },
+    where: { id: queryParamValidation.data.id , userId },
   });
 
   if (!notificationExists) {
@@ -239,6 +245,48 @@ export const deleteNotificationController = asyncWrapper(async (req, res) => {
     statusCode: StatusCodes.OK,
     success: true,
     message: "Notification deleted successfully",
+    result: notification,
+  });
+}); 
+
+export const deleteManyNotificationController = asyncWrapper(async (req, res) => {
+ 
+  const userId = req.user?._id
+
+  const notification = await db.notification.deleteMany({
+    where: { userId },
+  });
+
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Notification deleted successfully",
+    result: notification,
+  });
+}); 
+
+
+
+export const seenNotificationsController = asyncWrapper(async (req, res) => {
+  
+  const userId = req.user?._id
+
+  const notification = await db.notification.updateMany({
+    where: {
+      userId,
+    },
+    data : {
+      seen : true
+    }
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Notification updated successfully",
     result: notification,
   });
 }); 

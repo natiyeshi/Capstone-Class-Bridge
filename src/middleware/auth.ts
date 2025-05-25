@@ -24,4 +24,24 @@ const authenticationMiddleWare = asyncWrapper(async (req, _, next) => {
   next();
 });
 
-export default { authenticationMiddleWare };
+const checkRoleMiddleware = (allowedRoles: string[]) => {
+  return asyncWrapper(async (req : any, _, next) => {
+    if (!req.user) {
+      throw RouteError.Unauthorized("Authentication required");
+    }
+
+    const userRole = req.user?.role ?? null;
+    
+    if (!allowedRoles.includes(userRole)) {
+      throw RouteError.Forbidden("You don't have permission to access this resource");
+    }
+
+    next();
+  });
+};
+
+// Update the export to include both middleware functions
+export default { 
+  authenticationMiddleWare,
+  checkRoleMiddleware 
+};

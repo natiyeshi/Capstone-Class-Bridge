@@ -1,7 +1,7 @@
 import { Router } from "express";
 import middleware from "../middleware";
 import { 
-  getSectionController,
+  getSectionsController,
   addStudentsToSectionController,
   createSectionController,
   getSectionByIdController, 
@@ -16,7 +16,7 @@ import Auth from "../middleware/auth";
 
 const router = Router();
 
-router.get("/", getSectionController);
+router.get("/", Auth.authenticationMiddleWare,getSectionsController);
 router.get("/role",Auth.authenticationMiddleWare, getSectionByRoleController);
 router.post("/", createSectionController);
 router.get("/:id",Auth.authenticationMiddleWare, getSectionByIdController);
