@@ -185,20 +185,33 @@ export const createRoasterController = asyncWrapper(async (req, res) => {
                 
 
                 // Create the roaster
-                return db.roaster.create({
+                // First create the roaster
+                const roaster = await db.roaster.create({
                     data: {
                         studentId: student.id,
                         sectionId: sectionId,
                         semesterNumber: semesterNumber,
                         average: average,
-                        rank: 0, // Will be updated after all rosters are created
-                        subjects: {
-                            create: results.map(result => ({
+                        rank: 0 // Will be updated after all rosters are created
+                    }
+                });
+
+                // Then create and connect the subjects
+                await Promise.all(
+                    results.map(result =>
+                        db.roasterSubject.create({
+                            data: {
+                                roasterId: roaster.id,
                                 subjectName: result.subject?.name || 'Unknown Subject',
-                                subjectResult: rs[ result.subject?.id ?? ""]
-                            }))
-                        }
-                    },
+                                subjectResult: rs[result.subject?.id ?? ""]
+                            }
+                        })
+                    )
+                );
+
+                // Return roaster with subjects included
+                return await db.roaster.findUnique({
+                    where: { id: roaster.id },
                     include: {
                         subjects: true
                     }
@@ -208,11 +221,11 @@ export const createRoasterController = asyncWrapper(async (req, res) => {
         allRosters.push(...sectionRosters);
 
         // Update ranks for this section
-        const sortedSectionRosters = [...sectionRosters].sort((a, b) => b.average - a.average);
+        const sortedSectionRosters = [...sectionRosters].sort((a, b) => b?.average??0 - (a?.average??0));
         await Promise.all(
             sortedSectionRosters.map((roster, index) => 
                 db.roaster.update({
-                    where: { id: roster.id },
+                    where: { id: roster?.id },
                     data: { rank: index + 1 }
                 })
             )
