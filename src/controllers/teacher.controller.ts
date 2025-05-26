@@ -282,12 +282,7 @@ export const getAvailableHomeroomTeachersController = asyncWrapper(async (req, r
   // Find all teachers who are not currently assigned as homeroom teachers
   const availableTeachers = await db.teacher.findMany({
     where: {
-      // Find teachers where there is no section with this teacher as homeroom
-      // NOT: {
-      //   Section: {
-      //     some: {}
-      //   }
-      // }
+      Section: null
     },
     include: {
       user: true
