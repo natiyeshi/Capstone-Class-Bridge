@@ -113,6 +113,7 @@ export const createStudentController = asyncWrapper(async (req, res) => {
          phoneNumber: bodyValidation.data.phoneNumber,
          password: hashedPassword,
          role : "STUDENT",
+         profile : bodyValidation.data.profile
 
        },
      });

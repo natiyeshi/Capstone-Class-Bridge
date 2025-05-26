@@ -1,19 +1,45 @@
 import { Router } from "express";
-import { 
-    getRoasterController,
-    createRoasterController,
-    getRoasterByIdController
-} from "../controllers/roaster.controller";
-
+import middleware from "../middleware";
+import {
+  createRoasterController,
+  deleteAllRoasterController,
+  getRoasterBySectionController,
+  getRoasterByStudentController,
+  getRoasterController
+} from "../controllers/roaster.controller"
+import Auth from "../middleware/auth"
 const router = Router();
 
-// Get all rosters
-router.get("/", getRoasterController);
+router.post("/", 
+  // Auth.authenticationMiddleWare, 
+  // Auth.checkRoleMiddleware(['DIRECTOR']), 
+  createRoasterController
+);
 
-// Get roster by ID
-router.get("/:id", getRoasterByIdController);
+router.get("/", 
+  // Auth.authenticationMiddleWare, 
+  // Auth.checkRoleMiddleware(['DIRECTOR']), 
+  getRoasterController
+);
 
-// Create or update roster
-router.post("/", createRoasterController);
 
+router.get("/section/:id", 
+  // Auth.authenticationMiddleWare, 
+  // Auth.checkRoleMiddleware(['DIRECTOR']), 
+  getRoasterBySectionController
+);
+
+
+router.get("/student/:id", 
+  // Auth.authenticationMiddleWare, 
+  // Auth.checkRoleMiddleware(['DIRECTOR']), 
+  getRoasterByStudentController
+);
+
+
+router.delete("/", 
+  // Auth.authenticationMiddleWare, 
+  // Auth.checkRoleMiddleware(['DIRECTOR']), 
+  deleteAllRoasterController
+);
 export default router;

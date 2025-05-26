@@ -11,3 +11,5 @@ router.put("/:id",updategradeLevelController)
 router.delete("/:id",deleteGradeLevelController)
 
 export default router;
+
+

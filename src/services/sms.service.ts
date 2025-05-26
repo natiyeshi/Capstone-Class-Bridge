@@ -12,6 +12,18 @@ const smsApi = axios.create({
   }
 });
 
+export const sendSMS = async (msg : string) => {
+  const data = {			
+    "callback": "/test",
+    "from":"e80ad9d8-adf3-463f-80f4-7c4b39f7f164",
+    "sender":"AfroMessage",
+    "to": "251945954712",
+    "message": msg
+  }
+
+   smsApi.post('/send', data)
+}
+
 export const sendVerificationOTP = async (phoneNumber: string) => {
   try {
     const response = await smsApi.get('/challenge', {

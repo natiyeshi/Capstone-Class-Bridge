@@ -73,6 +73,7 @@ export const createTeacherController = asyncWrapper(async (req, res) => {
          gender: bodyValidation.data.gender,
          dateOfBirth: bodyValidation.data.dateOfBirth,
          role : "TEACHER",
+         profile : bodyValidation.data.profile
        },
      });
    
@@ -282,9 +283,11 @@ export const getAvailableHomeroomTeachersController = asyncWrapper(async (req, r
   const availableTeachers = await db.teacher.findMany({
     where: {
       // Find teachers where there is no section with this teacher as homeroom
-      Section: {
-        none: {} // This ensures the teacher is not a homeroom teacher for any section
-      }
+      // NOT: {
+      //   Section: {
+      //     some: {}
+      //   }
+      // }
     },
     include: {
       user: true

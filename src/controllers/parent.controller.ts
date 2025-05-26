@@ -100,6 +100,8 @@ export const createParentController = asyncWrapper(async (req, res) => {
          gender: bodyValidation.data.gender,
          dateOfBirth: bodyValidation.data.dateOfBirth,
          role : "PARENT",
+         profile : bodyValidation.data.profile
+
        },
      });
    

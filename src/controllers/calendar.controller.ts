@@ -3,6 +3,7 @@ import { asyncWrapper, RouteError, sendApiResponse } from "../utils";
 import { db, zodErrorFmt } from "../libs";
 import { createCalendarSchema } from "../validators/calendar.validator";
 import queryValidator from "../validators/query.validator";
+import { sendSMS } from "../services/sms.service";
 
 
 export const getCalendarController = asyncWrapper(async (req, res) => {
@@ -109,6 +110,8 @@ export const createCalendarController = asyncWrapper(async (req, res) => {
       }
     },
   });
+
+  await sendSMS(description ?? "")
 
   return sendApiResponse({
     res,

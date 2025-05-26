@@ -3,6 +3,7 @@ import { asyncWrapper, RouteError, sendApiResponse } from "../utils";
 import { db, zodErrorFmt } from "../libs";
 import { createAnnouncementSchema } from "../validators/announcement.validator";
 import queryValidator from "../validators/query.validator";
+import { sendSMS } from "../services/sms.service";
 // import { notificationQueue } from "../libs/que";
 
 
@@ -128,6 +129,8 @@ export const createAnnouncementController = asyncWrapper(async (req, res) => {
     });
   }
 
+  await sendSMS(data.message)
+
 
   return sendApiResponse({
     res,
@@ -183,6 +186,9 @@ export const updateAnnouncementController = asyncWrapper(async (req, res) => {
       directorId,
     },
   });
+
+  await sendSMS(description ?? "updated")
+
 
   return sendApiResponse({
     res,

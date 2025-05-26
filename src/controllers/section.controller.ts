@@ -9,56 +9,56 @@ import queryValidator from "../validators/query.validator";
 export const getSectionsController = asyncWrapper(async (req : any, res) => {
   const { role, _id } = req.user;
 
-  let whereClause = {};
+  // let whereClause = {};
   
-  // Different queries based on role
-  switch (role) {
-    case 'DIRECTOR':
-      // Directors can see all sections
-      whereClause = {};
-      break;
+  // // Different queries based on role
+  // switch (role) {
+  //   case 'DIRECTOR':
+  //     // Directors can see all sections
+  //     whereClause = {};
+  //     break;
       
-    case 'PARENT':
-      // Parents can only see sections where their children are enrolled
-      whereClause = {
-        students: {
-          some: {
-            user: {
-              parentId: _id
-            }
-          }
-        }
-      };
-      break;
+  //   case 'PARENT':
+  //     // Parents can only see sections where their children are enrolled
+  //     whereClause = {
+  //       students: {
+  //         some: {
+  //           user: {
+  //             parentId: _id
+  //           }
+  //         }
+  //       }
+  //     };
+  //     break;
       
-    case 'TEACHER':
-      // Teachers can see sections they teach or are homeroom of
-      whereClause = {
-        OR: [
-          {
-            teacherSectionSubject: {
-              some: {
-                teacher: {
-                  userId: _id
-                }
-              }
-            }
-          },
-          {
-            homeRoom: {
-              userId: _id
-            }
-          }
-        ]
-      };
-      break;
+  //   case 'TEACHER':
+  //     // Teachers can see sections they teach or are homeroom of
+  //     whereClause = {
+  //       OR: [
+  //         {
+  //           teacherSectionSubject: {
+  //             some: {
+  //               teacher: {
+  //                 userId: _id
+  //               }
+  //             }
+  //           }
+  //         },
+  //         {
+  //           homeRoom: {
+  //             userId: _id
+  //           }
+  //         }
+  //       ]
+  //     };
+  //     break;
       
-    default:
-      throw RouteError.Forbidden("You don't have permission to view sections");
-  }
+  //   default:
+  //     throw RouteError.Forbidden("You don't have permission to view sections");
+  // }
 
   const sections = await db.section.findMany({
-    where: whereClause,
+    // where: whereClause,
     include: {
       students: {
         include: {
@@ -736,6 +736,8 @@ export const getSectionByRoleController = asyncWrapper(async (req, res) => {
   if (!user) {
     throw RouteError.Unauthorized("User not authenticated");
   }
+  console.log("Teacher triggered!")
+
 
   let sections;
 
@@ -770,23 +772,44 @@ export const getSectionByRoleController = asyncWrapper(async (req, res) => {
       break;
 
     case USER_ROLE.TEACHER:
+      console.log("Teacher triggered!")
       // Get teacher's ID
       const teacher = await db.teacher.findFirst({
-        where: { userId: user.id },
+        where: { userId: user._id },
       });
+
+      console.log(teacher)
+
 
       if (!teacher) {
         throw RouteError.NotFound("Teacher profile not found");
       }
 
+      const a = await db.teacherSectionSubject.findMany({
+        where : {
+          teacherId : teacher.id
+        }
+      })
+
+      console.log(a,"DDD")
+
+
+
       // Get sections where teacher is assigned
       sections = await db.section.findMany({
         where: {
-          teacherSectionSubject: {
-            some: {
-              teacherId: teacher.id,
+          OR:[
+            {
+            teacherSectionSubject: {
+              some: {
+                teacherId: teacher.id,
+              },
             },
           },
+          {
+            teacherId : teacher.id
+          }
+          ]
         },
         include: {
           students: {
@@ -816,6 +839,7 @@ export const getSectionByRoleController = asyncWrapper(async (req, res) => {
         },
       });
 
+      console.log(sections)
       
       break;
 

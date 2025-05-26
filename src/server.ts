@@ -14,7 +14,8 @@ import {
   handleSectionAllMessages,
   handleSectionSendMessage,
   handleGradeLevelAllMessages,
-  handleGradeLevelSendMessage
+  handleGradeLevelSendMessage,
+  handleSeenMessage
 } from "./libs/socket.handlers";
 
 const { Server } = require("socket.io"); // Import Socket.IO Server class
@@ -43,12 +44,21 @@ export interface sectionSendData {
   error : string | null;
   data: any;
 }
+
+
+export interface gradeLevelSendData {
+  success: boolean;
+  gradeLevelId : string;
+  error : string | null;
+  data: any;
+}
 io.on("connection", async (socket: any) => {
   console.log("User connected ", socket.id);
 
   // Direct Message Events
   socket.on("all_messages", (data: any) => handleAllMessages(socket, data));
   socket.on("send_message", (data: any) => handleSendMessage(io, data));
+  socket.on("seen-messages",(data : any) => handleSeenMessage(io, socket, data))
 
   // Section Message Events
   socket.on("section_all_messages", (sectionId: string) => handleSectionAllMessages(socket, sectionId));
@@ -57,6 +67,7 @@ io.on("connection", async (socket: any) => {
   // Grade Level Message Events
   socket.on("grade_level_all_messages", (gradeLevelId: string) => handleGradeLevelAllMessages(socket, gradeLevelId));
   socket.on("grade_level_send_message", (data: any) => handleGradeLevelSendMessage(io, data));
+
 });
 // Initialize Socket.IO
 // const io = initializeSocket(server);

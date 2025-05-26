@@ -59,6 +59,7 @@ export const signInController = asyncWrapper(async (req, res) => {
   });
 
   if (!existingUser) throw RouteError.BadRequest("Invalid email or password");
+  if (["UNKNOWN","STUDENT"].includes(existingUser.role ?? "")) throw RouteError.BadRequest("Invalid email or password");
   if (existingUser.isBlocked)
     throw RouteError.BadRequest("Your account has been blocked. Please contact an administrator.");
   const isCorrectPassword = await passwordCrypt.verifyPassword(
