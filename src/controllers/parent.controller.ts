@@ -378,3 +378,47 @@ export const getParentGradeLevelsController = asyncWrapper(async (req, res) => {
   });
 });
 
+
+export const toggleParentSMSPreferenceController = asyncWrapper(async (req, res) => {
+  const queryParamValidation = queryValidator
+    .queryParamIDValidator("Parent ID not provided or invalid.")
+    .safeParse(req.params);
+
+  if (!queryParamValidation.success)
+    throw RouteError.BadRequest(
+      zodErrorFmt(queryParamValidation.error)[0].message,
+      zodErrorFmt(queryParamValidation.error)
+    );
+
+  const parent = await db.parent.findUnique({
+    where: { id: queryParamValidation.data.id },
+    include: {
+      user: true
+    }
+  });
+
+  if (!parent) {
+    throw RouteError.NotFound("Parent not found");
+  }
+
+  // Toggle the isSMSUser status
+  const updatedParent = await db.parent.update({
+    where: { id: queryParamValidation.data.id },
+    data: {
+      isSMSUser: !parent.isSMSUser
+    },
+    include: {
+      user: true
+    }
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: `SMS notifications update successfully`,
+    result: {
+      isSMSUser: updatedParent.isSMSUser
+    }
+  });
+});

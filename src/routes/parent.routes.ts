@@ -9,7 +9,8 @@ import {
     getParentsController,
     activateParentController,
     getParentSectionsController,
-    getParentGradeLevelsController
+    getParentGradeLevelsController,
+    toggleParentSMSPreferenceController
 } from "../controllers/parent.controller"
 import Auth from "../middleware/auth";
 
@@ -24,6 +25,7 @@ router.post("/activate", Auth.authenticationMiddleWare, activateParentController
 router.get("/:id/related-users", getRelatedUsersController);
 router.get("/:id/sections", getParentSectionsController);
 router.get("/:id/grade-levels", getParentGradeLevelsController);
+router.post("/toggle-sms/:id",toggleParentSMSPreferenceController)
 
 
 export default router;
