@@ -142,7 +142,7 @@ export const createRoasterController = asyncWrapper(async (req, res) => {
     });
     
     if (existingRosters.length > 0) {
-        semesterNumber = existingRosters[0].semesterNumber
+        semesterNumber = existingRosters[0].semesterNumber + 1
     }
 
     // Group students by section for better organization

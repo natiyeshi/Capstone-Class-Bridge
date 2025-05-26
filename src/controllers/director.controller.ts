@@ -95,13 +95,15 @@ export const getRelatedUsersController = asyncWrapper(async (req, res) => {
       lastName: string;
       role: string | null;
       roleSpecificId: string | null;
+      profile : string | null;
     } = {
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
-      roleSpecificId: null
+      roleSpecificId: null,
+      profile : user.profile
     };
 
     switch (user.role) {
