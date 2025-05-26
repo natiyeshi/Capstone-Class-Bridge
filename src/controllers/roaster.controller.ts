@@ -9,6 +9,7 @@ export const getRoasterController = asyncWrapper(async (req, res) => {
   const users = await db.roaster.findMany({
     include:{
         section:true,
+        subjects: true,
         student : { 
             include :{
                 user : true
@@ -42,6 +43,7 @@ export const getRoasterBySectionController = asyncWrapper(async (req, res) => {
     },
     include: {
       section: true,
+      subjects : true,
       student: {
         include: {
           user: true
@@ -79,6 +81,7 @@ export const getRoasterByStudentController = asyncWrapper(async (req, res) => {
     },
     include: {
       section: true,
+      subjects: true,
       student: {
         include: {
           user: true
