@@ -8,7 +8,8 @@ import {
   deleteUserController, 
   getUserById,
   sendVerificationOTPController,
-  verifyPhoneNumberController
+  verifyPhoneNumberController,
+  changePasswordController
 } from "../controllers/user.controller"
 import Auth from "../middleware/auth";
 
@@ -20,6 +21,7 @@ router.put("/update/:id", updateUser);
 router.put("/update-me",Auth.authenticationMiddleWare, updateMe);
 router.delete("/:id", deleteUserController);
 router.get("/:id", getUserById);
+router.post("/change-password", Auth.authenticationMiddleWare,changePasswordController);
 
 // Phone verification routes
 router.post("/verify-phone/send", Auth.authenticationMiddleWare, sendVerificationOTPController);

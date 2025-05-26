@@ -270,3 +270,54 @@ export const verifyPhoneNumberController = asyncWrapper(async (req, res) => {
     }
   });
 });
+
+
+export const changePasswordController = asyncWrapper(async (req, res) => {
+  const id = req.user?._id ?? null;
+  
+  if (!id) {
+    throw RouteError.Unauthorized("User not authenticated");
+  }
+
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    throw RouteError.BadRequest("Current password and new password are required");
+  }
+
+  // Get user
+  const user = await db.user.findUnique({
+    where: { id }
+  });
+
+  if (!user) {
+    throw RouteError.NotFound("User not found");
+  }
+
+  // Verify current password
+  const isPasswordValid = await passwordCrypt.verifyPassword(currentPassword, user.password);
+  
+  if (!isPasswordValid) {
+    throw RouteError.BadRequest("Current password is incorrect");
+  }
+
+  // Hash new password
+  const hashedPassword = await passwordCrypt.hashPassword(newPassword);
+
+  // Update password
+  const updatedUser = await db.user.update({
+    where: { id },
+    data: { password: hashedPassword }
+  });
+
+  return sendApiResponse({
+    res,
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Password changed successfully",
+    result: {
+      id: updatedUser.id,
+      email: updatedUser.email
+    }
+  });
+});
