@@ -119,7 +119,8 @@ export const createAttendanceController = asyncWrapper(async (req, res) => {
     // Update existing attendance record
     attendance = await db.attendance.update({
       where: {
-        id: existingAttendance.id
+        id: existingAttendance.id,
+        date,
       },
       data: {
         status,
