@@ -130,7 +130,7 @@ export const handleSendMessage = async (io: Server, data: any) => {
         }
       });
     
-      await sendSMS(bodyValidation.data.content)
+      await sendSMS(bodyValidation.data.content ?? "")
 
     io.emit("receive_message", {
       success: true,
@@ -267,7 +267,7 @@ export const handleSectionSendMessage = async (io: Server, data: any) => {
       });
     }
 
-    await sendSMS(bodyValidation.data.content)
+    await sendSMS(bodyValidation.data.content ?? "")
 
 
     io.emit("section_receive_message", {
@@ -455,7 +455,7 @@ export const handleGradeLevelSendMessage = async (io: Server, data: any) => {
       });
     }
 
-    await sendSMS(bodyValidation.data.content)
+    await sendSMS(bodyValidation.data.content ?? "")
 
     io.emit("grade_level_receive_message", {
       success: true,

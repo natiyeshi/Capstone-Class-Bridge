@@ -3,8 +3,7 @@ import { z } from "zod";
 export const SectionMessageSchema = z.object({
 
     content: z.string({
-        required_error: "Content is required",
-    }),
+    }).nullable().optional(),
 
     sectionId: z.string({
         required_error: "Section ID is required",

@@ -4,7 +4,7 @@ export const MessageSchema = z.object({
 
   content: z.string({
     required_error: "Content is required",
-  }),
+  }).nullable(),
 
   senderId: z.string({
     required_error: "Sender ID is required",

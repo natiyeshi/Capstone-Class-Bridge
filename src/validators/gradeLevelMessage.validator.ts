@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const gradeLevelMessageSchema = z.object({
-  content: z.string().min(1, "Content is required"),
+  content: z.string().nullable().optional(),
   image: z.string().optional(),
   gradeLevelId: z.string().min(1, "Grade level ID is required"),
   senderId: z.string().min(1, "Sender ID is required"),
