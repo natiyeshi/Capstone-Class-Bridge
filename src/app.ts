@@ -4,6 +4,7 @@ import cors from "cors";
 
 import routes from "./routes";
 import middlewares from "./middleware";
+import Auth from "./middleware/auth";
 
 const app = express();
 
@@ -16,23 +17,23 @@ app.use(middlewares.limiter);
 // Registring routes
 app.use("/api/v1/auth", routes.authRoute);
 app.use("/api/v1/users", routes.userRoute);
-app.use("/api/v1/teacher", routes.teacherRoute);
-app.use("/api/v1/parent", routes.parentRoute);
-app.use("/api/v1/director", routes.directorRoute);
-app.use("/api/v1/subject", routes.subjectRoute);
-app.use("/api/v1/gradeLevel", routes.gradeLevelRoute);
-app.use("/api/v1/section", routes.sectionRoute);
-app.use("/api/v1/student", routes.studentRoute);
-app.use("/api/v1/calendar", routes.calendarRoute);
-app.use("/api/v1/attendance", routes.attendanceRoute);
-app.use("/api/v1/announcement", routes.announcementRoute);
-app.use("/api/v1/result", routes.resultRouter);
-app.use("/api/v1/collective-result", routes.collectiveResultRouter);
-app.use("/api/v1/message", routes.messageRouter);
-app.use("/api/v1/section-message", routes.sectionMessageRouter);
-app.use('/api/v1/roster', routes.rosterRouter);
-app.use('/api/v1/grade-level-message', routes.gradeLevelMessageRouter);
-app.use('/api/v1/notification', routes.notificationRouter);
+app.use("/api/v1/teacher", Auth.authenticationMiddleWare,routes.teacherRoute);
+app.use("/api/v1/parent",Auth.authenticationMiddleWare, routes.parentRoute);
+app.use("/api/v1/director",Auth.authenticationMiddleWare, routes.directorRoute);
+app.use("/api/v1/subject",Auth.authenticationMiddleWare, routes.subjectRoute);
+app.use("/api/v1/gradeLevel",Auth.authenticationMiddleWare, routes.gradeLevelRoute);
+app.use("/api/v1/section",Auth.authenticationMiddleWare, routes.sectionRoute);
+app.use("/api/v1/student",Auth.authenticationMiddleWare, routes.studentRoute);
+app.use("/api/v1/calendar",Auth.authenticationMiddleWare, routes.calendarRoute);
+app.use("/api/v1/attendance",Auth.authenticationMiddleWare, routes.attendanceRoute);
+app.use("/api/v1/announcement",Auth.authenticationMiddleWare, routes.announcementRoute);
+app.use("/api/v1/result",Auth.authenticationMiddleWare, routes.resultRouter);
+app.use("/api/v1/collective-result",Auth.authenticationMiddleWare, routes.collectiveResultRouter);
+app.use("/api/v1/message", Auth.authenticationMiddleWare,routes.messageRouter);
+app.use("/api/v1/section-message", Auth.authenticationMiddleWare,routes.sectionMessageRouter);
+app.use('/api/v1/roster',Auth.authenticationMiddleWare, routes.rosterRouter);
+app.use('/api/v1/grade-level-message',Auth.authenticationMiddleWare, routes.gradeLevelMessageRouter);
+app.use('/api/v1/notification',Auth.authenticationMiddleWare, routes.notificationRouter);
 
 // Route error handling middleware
 app.use(middlewares.routeErrorHandlingMiddleware);

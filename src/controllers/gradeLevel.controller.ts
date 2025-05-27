@@ -5,18 +5,69 @@ import { GradeLevel } from "@prisma/client";
 import {GradeLevelSchema, updateGradeLevelSchema} from "../validators/gradeLeve.validator";
 import queryValidator from "../validators/query.validator";
 
-export const getGradeLevelController = asyncWrapper(async (req, res) => {
-  const gradelevel = await db.gradeLevel.findMany({
-    include : {
-      subjectList : true,
-      Section : true
-    }
-  });
+export const getGradeLevelController = asyncWrapper(async (req :any, res) => {
+  const userId = req.user?._id;
+  const userRole = req.user?.role;
+
+  if (!userId || !userRole) {
+    throw RouteError.BadRequest("User not found");
+  }
+
+  let gradelevel;
+
+  if (userRole === "DIRECTOR") {
+    // Directors can see all grade levels
+    gradelevel = await db.gradeLevel.findMany({
+      include: {
+        subjectList: true,
+        Section: true
+      }
+    });
+  } else if (userRole === "PARENT") {
+    // Parents can only see their children's grade levels
+    gradelevel = await db.gradeLevel.findMany({
+      where: {
+        Section: {
+          some: {
+            students: {
+              some: {
+                parent: {
+                  userId: userId
+                }
+              }
+            }
+          }
+        }
+      },
+      include: {
+        subjectList: true,
+        Section: true
+      }
+    });
+  } else if (userRole === "TEACHER") {
+    // Teachers can only see their assigned grade levels
+    gradelevel = await db.gradeLevel.findMany({
+      where: {
+        Section: {
+          some: {
+            teacherId: userId
+          }
+        }
+      },
+      include: {
+        subjectList: true,
+        Section: true
+      }
+    });
+  } else {
+    throw RouteError.Forbidden("Unauthorized access");
+  }
+
   return sendApiResponse({
     res,
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Grade Level retrived successfully",
+    message: "Grade Level retrieved successfully",
     result: gradelevel,
   });
 });
