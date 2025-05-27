@@ -17,9 +17,13 @@ export const signUpSchema = z.object({
   email: z.string({ message: "Email has to be a string" }).email({
     message: "Invalid email.",
   }),
-  password: z.string({ message: "Password has to be a string" }).trim().min(1, {
-    message: "Password field is required.",
-  }),
+  password: z.string({ message: "Password has to be a string" })
+    .trim()
+    .min(8, { message: "Password must be at least 8 characters long" })
+    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
+    .regex(/[0-9]/, { message: "Password must contain at least one number" })
+    .regex(/[^A-Za-z0-9]/, { message: "Password must contain at least one special character" }),
   phoneNumber: z.string({ message: "Phone number has to be a string" }),
   gender: z
     .enum(["M", "F"], { message: "Gender must be either 'M' or 'F'" })

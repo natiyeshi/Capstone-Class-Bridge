@@ -53,11 +53,23 @@ export const createTeacherController = asyncWrapper(async (req, res) => {
          zodErrorFmt(bodyValidation.error)
        );
    
-     const existingUser = await db.user.findUnique({
-       where: { email: bodyValidation.data.email },
+     const existingUser = await db.user.findFirst({
+       where: {
+         OR: [
+           { email: bodyValidation.data.email },
+           { phoneNumber: bodyValidation.data.phoneNumber }
+         ]
+       },
      });
    
-     if (existingUser) throw RouteError.BadRequest("Email already in use.");
+     if (existingUser) {
+       if (existingUser.email === bodyValidation.data.email) {
+         throw RouteError.BadRequest("Email already in use.");
+       }
+       if (existingUser.phoneNumber === bodyValidation.data.phoneNumber) {
+         throw RouteError.BadRequest("Phone number already in use.");
+       }
+     }
    
      const hashedPassword = await passwordCrypt.hashPassword(
        bodyValidation.data.password
