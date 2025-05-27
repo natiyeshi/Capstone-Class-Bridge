@@ -26,24 +26,28 @@ export const getGradeLevelController = asyncWrapper(async (req :any, res) => {
   } else if (userRole === "PARENT") {
     // Parents can only see their children's grade levels
     gradelevel = await db.gradeLevel.findMany({
-      where: {
+      include: {
+        subjectList: true,
         Section: {
-          some: {
-            students: {
-              some: {
-                parent: {
-                  userId: userId
-                }
+          include :{ 
+            students : {
+              include : {
+                parent : true
               }
             }
           }
         }
-      },
-      include: {
-        subjectList: true,
-        Section: true
       }
     });
+    
+    // Filter grade levels to only include those associated with the parent's children
+    gradelevel = gradelevel.filter(gl => 
+      gl.Section.some(section =>
+        section.students.some(student => 
+          student.parent.userId === userId
+        )
+      )
+    );
   } else if (userRole === "TEACHER") {
     // Teachers can only see their assigned grade levels
     gradelevel = await db.gradeLevel.findMany({
