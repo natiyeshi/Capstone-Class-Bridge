@@ -248,3 +248,21 @@ export const forgetPasswordController = asyncWrapper(async (req, res) => {
 });
 
 
+export const getBlockableUsersController = asyncWrapper(async (req, res) => {
+  const users = await db.user.findMany({
+    where: {
+      role: {
+        not: 'DIRECTOR'
+      }
+    },
+   
+  });
+
+  return sendApiResponse({
+    res, 
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Blockable users retrieved successfully",
+    result: users
+  });
+});

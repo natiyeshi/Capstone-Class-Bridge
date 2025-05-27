@@ -6,7 +6,8 @@ import {
   getRelatedUsersController,
   blockUserController,
   unblockUserController, 
-  forgetPasswordController
+  forgetPasswordController,
+  getBlockableUsersController
 } from "../controllers/director.controller"
 import Auth from "../middleware/auth"
 const router = Router();
@@ -23,5 +24,6 @@ router.post("/forget-password",
 // Block/Unblock user routes
 router.patch("/:userId/block", Auth.authenticationMiddleWare, blockUserController);
 router.patch("/:userId/unblock", Auth.authenticationMiddleWare, unblockUserController);
+router.get("/blockable",Auth.authenticationMiddleWare,getBlockableUsersController)
 
 export default router;

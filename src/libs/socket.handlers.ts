@@ -430,7 +430,6 @@ export const handleGradeLevelSendMessage = async (io: Server, data: any) => {
         image: bodyValidation.data.image,
         gradeLevelId: bodyValidation.data.gradeLevelId,
         senderId: bodyValidation.data.senderId,
-        createdAt: new Date(),
       },
       include: {
         sender: true,
@@ -492,4 +491,3 @@ export const handleSeenMessage = async (io: Server,socket : any, data: any) => {
     console.error("Error marking message as seen:", error);
   }
 };
-

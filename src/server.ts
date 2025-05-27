@@ -15,7 +15,7 @@ import {
   handleSectionSendMessage,
   handleGradeLevelAllMessages,
   handleGradeLevelSendMessage,
-  handleSeenMessage
+  handleSeenMessage,
 } from "./libs/socket.handlers";
 
 const { Server } = require("socket.io"); // Import Socket.IO Server class

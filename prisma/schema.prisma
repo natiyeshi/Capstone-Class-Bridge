@@ -245,7 +245,7 @@ model GradeLevelMessage {
   id           String      @id @unique @default(cuid())
   content      String?
   image        String?
-  createdAt    DateTime?
+  createdAt DateTime @default(now())
   gradeLevelId String?
   senderId     String?
   gradeLevel   GradeLevel? @relation(fields: [gradeLevelId], references: [id])
